@@ -14,7 +14,9 @@ class Planner(Agent):
         self._output_model = {}
         self._todo_list = _todo()
 
-    def run(self):
+        self.message = [] 
+
+    def run(self , task):
         """
         It should generate a to do list
         and then pass to different agent
@@ -35,6 +37,8 @@ class Planner(Agent):
             cur_task = self._todo_list.pop_task()
             agent = cur_task.agent
             task = cur_task.task
+            # check if any information update from other agent
+            res = agent.run(task)
 
     def add_model(self, model, description):
         self._output_model[model] = description

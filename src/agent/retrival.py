@@ -20,12 +20,13 @@ class RAG_agent(Agent):
         self.db = VectorSearch(path=path)
         self.tool_list = ["Add_document", "Query", "Reset"]
 
-    def run(self, task: str):
+    def run(self, task: str) -> str:
         self.task = task
         self.prompt = retrival_agent_prompt(self.tool_list, task=task)
         res = self.model.completion(self.prompt)
         json_res = self._extract_response(res)
         self._json_handler(json_res)
+        return ""
 
     def _json_handler(self, res: str):
         """
