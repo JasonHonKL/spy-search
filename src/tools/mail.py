@@ -1,0 +1,1 @@
+"This is a tool to send emails using the SMTP protocol."
