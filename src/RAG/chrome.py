@@ -12,7 +12,7 @@ class VectorSearch:
         name="new_collection",
         path: str = "./db",
     ):
-
+        self.name = name
         self.client = chromadb.PersistentClient(
             path=path, settings=Settings(allow_reset=True)
         )
@@ -20,11 +20,11 @@ class VectorSearch:
             url="http://localhost:11434", model_name=model
         )
         try:
+            self.collection = self.client.get_collection(name=name)
+        except:
             self.collection = self.client.create_collection(
                 name=name, embedding_function=self.embedding
             )
-        except:
-            self.collection = self.client.get_collection(name=name)
 
     def add_document(self, documents: str, id: str, metadatas: None = None):
         if metadatas == None:
@@ -37,3 +37,6 @@ class VectorSearch:
 
     def reset(self):
         self.client.reset()
+        self.collection = self.client.create_collection(
+            name=self.name, embedding_function=self.embedding
+        )

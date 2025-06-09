@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,11 +19,15 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleAgentConfigSave = async (selectedAgents: string[]) => {
-    setAgents(selectedAgents);
+  const handleAgentConfigSave = async (config: {
+    agents: string[];
+    provider: string;
+    model: string;
+  }) => {
+    setAgents(config.agents);
     
-    // Send agent selection to backend (excluding planner)
-    const agentsToSend = selectedAgents.filter(agent => agent !== "planner");
+    // Send agent selection, provider, and model to backend (excluding planner)
+    const agentsToSend = config.agents.filter(agent => agent !== "planner");
     
     try {
       const response = await fetch('http://localhost:8000/agents_selection', {
@@ -32,15 +35,19 @@ const Index = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ agents: agentsToSend }),
+        body: JSON.stringify({ 
+          agents: agentsToSend,
+          provider: config.provider,
+          model: config.model
+        }),
       });
       
       const data = await response.json();
       
       if (data.success) {
         toast({
-          title: "Agent Configuration Saved",
-          description: "Your agent selection has been saved successfully.",
+          title: "Configuration Saved",
+          description: `Agent selection, provider (${config.provider}), and model (${config.model}) have been saved successfully.`,
         });
       } else {
         throw new Error("Failed to save configuration");

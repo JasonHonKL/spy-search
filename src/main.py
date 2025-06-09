@@ -1,16 +1,12 @@
 """
 This is the main function of the agent
 """
-
-import json
-
 from src.agent import Planner, Agent
 from src.router import Server, Router
 
 import logging
 
 logger = logging.getLogger(__name__)
-
 
 async def generate_report(query, planner: Planner, agents: list[Agent]):
     planner.query = query
@@ -37,11 +33,3 @@ async def generate_report(query, planner: Planner, agents: list[Agent]):
     return report
 
 
-def read_config():
-    """
-    TODO: should this be place in util folder ?
-    """
-    with open("./config.json", "r") as file:
-        content = file.read()
-        config = json.loads(content)
-    return config

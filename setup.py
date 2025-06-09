@@ -19,4 +19,4 @@ if __name__ == "__main__":
     print(f".env file created at {os.path.abspath(file_path)}")
     os.mkdir("./tmp")
     os.mkdir("./tmp/screenshot")
-    os.mkdir("local_files")
+    os.mkdir("./local_files")

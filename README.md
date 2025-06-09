@@ -27,6 +27,8 @@ To set up just run
 python setup.py
 ```
 
+Add your API key in the .env file if you want to use API. Currently we support openAI, Claude, Gork & Deepseek. If you use ollama you don't need to do anything. 
+
 config the config.json file, you may copy the following template
 ```json
 {
@@ -64,11 +66,34 @@ Watch the demo video on YouTube:
 
 [![Demo Video](https://img.youtube.com/vi/Dgb33BHtRwQ/0.jpg)](https://youtu.be/Dgb33BHtRwQ)
 
-## Contribution
+## Contributing
 
-We welcome contributions of all kinds! Please note that Spy Search is currently in a rapid development phase focused on performance optimization. As a result, the codebase is evolving quickly and may undergo significant changes.
+We welcome contributions from the community! Here’s how you can contribute:
 
-Join us in building the future of fast, affordable search!
+### Pull Requests
+
+- We appreciate pull requests that fix bugs, add features, or improve documentation.
+- Please ensure your PR:
+  - Is based on the latest `main` branch.
+  - Includes clear descriptions and testing instructions.
+  - Passes all automated tests and checks.
+
+Once submitted, maintainers will review your PR and provide feedback or merge it if it meets the project standards.
+
+### Issues
+
+- Feel free to open issues for bugs, feature requests, or questions.
+- When submitting an issue, please include:
+  - A clear and descriptive title.
+  - Steps to reproduce (for bugs).
+  - Expected and actual behavior.
+  - Any relevant environment or version information.
+
+Maintainers will acknowledge your issue, label it appropriately, and work on resolving it or discuss it with you.
+
+---
+
+Thank you for helping improve this project! Your contributions make a difference.
 
 
 ## Thank you everyone's support :) 

@@ -4,5 +4,6 @@
     "agents": [
         "reporter",
         "local-retrieval"
-    ]
+    ],
+    "db": "./local_files/test"
 }

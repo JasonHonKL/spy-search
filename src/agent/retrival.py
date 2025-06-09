@@ -2,6 +2,7 @@ from ..RAG.chrome import VectorSearch
 from .agent import Agent
 from ..model import Model
 from ..prompt import retrieval_prompt
+from ..utils import read_config
 
 from markitdown import MarkItDown
 
@@ -21,17 +22,16 @@ class RAG_agent(Agent):
         model: a LLM model
         path: db path , default "./db"
     """
-
-    """
-        TODO: dynamic file list ? 
-    """
-
-    def __init__(self, model:Model, path: str = "./db", filelist="./local_files"):
+    def __init__(self, model:Model, path: str = "./local_db", filelist="./local_files"):
         self.model = model
         self.db = VectorSearch(path=path)
+        # TODO: maybe don't use hard reset ? 
+        self.db.reset()
         self.tool_list = ["add_document", "query", "reset"]
 
-        self.filelist = filelist
+        config = read_config()
+        self.filelist = config.get('db' , filelist)
+
         self.name = "local-retrieval"
         self.description = "read local files and get summary"
 
@@ -53,6 +53,10 @@ class RAG_agent(Agent):
         result = self.db.query(task , 2)
         logger.info(f"get the result {result}")
         for i, docs in enumerate(result["documents"]):
+
+            """
+                TODO: refactor use localRAG class 
+            """
             file_path = result["metadatas"][0][i]['file']  # fix: index correctly
             prompt = retrieval_prompt(docs, file_path)
             res = self.model.completion(prompt)

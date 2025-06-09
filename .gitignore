@@ -8,3 +8,4 @@ node_modules/
 .next/
 .DS_Store/
 venv/
+local_files/

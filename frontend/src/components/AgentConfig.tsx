@@ -1,18 +1,29 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Settings2 } from "lucide-react";
+import { Users, Settings2, Brain, Database } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { DatabaseModal } from "@/components/DatabaseModal";
 
 interface AgentConfigProps {
   agents: string[];
-  onAgentConfigSave: (agents: string[]) => void;
+  onAgentConfigSave: (config: {
+    agents: string[];
+    provider: string;
+    model: string;
+  }) => void;
 }
 
 export const AgentConfig = ({ agents, onAgentConfigSave }: AgentConfigProps) => {
   const [selectedAgents, setSelectedAgents] = useState<string[]>(agents);
+  const [provider, setProvider] = useState<string>("");
+  const [model, setModel] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [showDatabaseModal, setShowDatabaseModal] = useState(false);
+  const { toast } = useToast();
 
   const availableAgents = [
     { id: "searcher", label: "Searcher", required: false, disabled: false },
@@ -24,6 +35,43 @@ export const AgentConfig = ({ agents, onAgentConfigSave }: AgentConfigProps) => 
     { id: "notion", label: "Notion", required: false, disabled: true },
     { id: "google-drive", label: "Google Drive", required: false, disabled: true }
   ];
+
+  const providers = [
+    { value: "openai", label: "OpenAI" },
+    { value: "grok", label: "Grok" },
+    { value: "deepseek", label: "DeepSeek" },
+    { value: "ollama", label: "Ollama" }
+  ];
+
+  const modelOptions: Record<string, string[]> = {
+    openai: ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"],
+    grok: ["grok-beta", "grok-2-1212", "grok-2-vision-1212"],
+    deepseek: ["deepseek-chat", "deepseek-reasoner"],
+    ollama: ["llama2", "codellama", "mistral", "neural-chat"]
+  };
+
+  // Fetch current config from backend
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/get_config');
+        if (response.ok) {
+          const config = await response.json();
+          setSelectedAgents(config.agents || []);
+          setProvider(config.provider || "");
+          setModel(config.model || "");
+        } else {
+          console.error('Failed to fetch config');
+        }
+      } catch (error) {
+        console.error('Error fetching config:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchConfig();
+  }, []);
 
   // Ensure planner is always included but not shown
   useEffect(() => {
@@ -43,7 +91,14 @@ export const AgentConfig = ({ agents, onAgentConfigSave }: AgentConfigProps) => 
     }
   };
 
-  const handleSave = () => {
+  const handleDatabaseSelection = () => {
+    toast({
+      title: "Coming Soon",
+      description: "Database/folder selection feature is currently under development.",
+    });
+  };
+
+  const handleSave = async () => {
     // Validate that reporter is selected since summary is disabled
     const hasReporter = selectedAgents.includes("reporter");
     
@@ -51,18 +106,114 @@ export const AgentConfig = ({ agents, onAgentConfigSave }: AgentConfigProps) => 
       // Auto-select reporter if not selected
       const finalAgents = [...selectedAgents, "reporter"];
       setSelectedAgents(finalAgents);
-      onAgentConfigSave(finalAgents);
+    }
+
+    if (!provider || !model) {
+      toast({
+        title: "Configuration Incomplete",
+        description: "Please select both provider and model.",
+        variant: "destructive",
+      });
       return;
     }
     
     const finalAgents = selectedAgents.includes("planner") ? selectedAgents : [...selectedAgents, "planner"];
-    onAgentConfigSave(finalAgents);
+    const agentsToSend = finalAgents.filter(agent => agent !== "planner");
+    
+    onAgentConfigSave({
+      agents: finalAgents,
+      provider,
+      model
+    });
   };
 
   const isReporterSelected = selectedAgents.includes("reporter");
 
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <div className="flex items-center justify-center p-8">
+          <div className="text-muted-foreground">Loading configuration...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
+      {/* Provider Selection */}
+      <Card className="glass-card border-0">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-3 text-lg font-medium">
+            <Brain className="h-5 w-5 text-primary" />
+            LLM Provider
+          </CardTitle>
+          <CardDescription>Choose your language model provider</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Select value={provider} onValueChange={setProvider}>
+            <SelectTrigger className="apple-input">
+              <SelectValue placeholder="Select provider" />
+            </SelectTrigger>
+            <SelectContent>
+              {providers.map((p) => (
+                <SelectItem key={p.value} value={p.value}>
+                  {p.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
+
+      {/* Model Selection */}
+      {provider && (
+        <Card className="glass-card border-0">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-3 text-lg font-medium">
+              <Settings2 className="h-5 w-5 text-primary" />
+              Model Selection
+            </CardTitle>
+            <CardDescription>Choose the specific model for your provider</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Select value={model} onValueChange={setModel}>
+              <SelectTrigger className="apple-input">
+                <SelectValue placeholder="Select model" />
+              </SelectTrigger>
+              <SelectContent>
+                {(modelOptions[provider] || []).map((m) => (
+                  <SelectItem key={m} value={m}>
+                    {m}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Database/Folder Selection */}
+      <Card className="glass-card border-0">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-3 text-lg font-medium">
+            <Database className="h-5 w-5 text-primary" />
+            Database/Folder Selection
+          </CardTitle>
+          <CardDescription>Manage and select database folders for local retrieval</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            onClick={() => setShowDatabaseModal(true)}
+            variant="outline"
+            className="w-full"
+          >
+            <Database className="mr-2 h-4 w-4" />
+            Manage Database/Folders
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Agent Selection */}
       <Card className="glass-card border-0">
         <CardHeader className="pb-4">
@@ -110,11 +261,17 @@ export const AgentConfig = ({ agents, onAgentConfigSave }: AgentConfigProps) => 
       {/* Save Configuration */}
       <Button
         onClick={handleSave}
-        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-6 text-lg rounded-xl"
+        disabled={!provider || !model}
+        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-6 text-lg rounded-xl disabled:opacity-50"
       >
         <Settings2 className="mr-3 h-5 w-5" />
         Save Agent Configuration
       </Button>
+
+      <DatabaseModal 
+        open={showDatabaseModal} 
+        onOpenChange={setShowDatabaseModal} 
+      />
     </div>
   );
 };

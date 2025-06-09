@@ -19,3 +19,4 @@
 
 ## v0.5
 - [] fast search with other programming language
+- [] Audio summary Agent
