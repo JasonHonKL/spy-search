@@ -1,7 +1,6 @@
 from .model import Model
 
 from openai import OpenAI
-from dotenv import load_dotenv
 
 from crawl4ai import LLMConfig
 
@@ -10,7 +9,6 @@ import os
 
 class Gork(Model):
     def __init__(self, model: str = "", api_key: str = ""):
-        load_dotenv(override=True)
         self.api_key = os.getenv("XAI_API_KEY")
         self.model = model
         self.client = OpenAI(

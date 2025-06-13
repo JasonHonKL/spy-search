@@ -1,6 +1,7 @@
+import os
 from src.api.app import router
 
-
+from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 
@@ -8,6 +9,9 @@ STEP = 10
 
 
 import logging
+
+
+load_dotenv(override=True)
 
 # Configure logging
 logging.basicConfig(
@@ -18,8 +22,10 @@ logging.basicConfig(
 app = FastAPI()
 app.include_router(router)
 
+port = os.getenv("VITE_PORT")
+port = port if port is not None else "8080"
 origins = [
-    "http://localhost:8080",
+    f"http://localhost:{port}",
 ]
 
 app.add_middleware(
@@ -29,4 +35,3 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-

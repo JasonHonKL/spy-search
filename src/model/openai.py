@@ -2,7 +2,6 @@ from .model import Model
 from ..utils import read_config
 
 from openai import OpenAI as openai
-from dotenv import load_dotenv
 
 from crawl4ai import LLMConfig
 
@@ -11,17 +10,16 @@ import os
 
 class OpenAI(Model):
     def __init__(self, model: str = "", api_key: str = ""):
-        load_dotenv(override=True)
         self.api_key = os.getenv("OPENAI_API_KEY")
 
         config = read_config()
         if config.get("base_url" , "") == "" :
             self.client = openai(
                 api_key=self.api_key,
-            ) 
+            )
         else:
             self.client = openai(
-               api_key=self.api_key, 
+               api_key=self.api_key,
                base_url=config.get("base_url" , "")
             )
 
@@ -41,7 +39,7 @@ class OpenAI(Model):
                 model=self.model, messages=self.messages, stream=False
             )
         return response.choices[0].message.content
-    
+
     def completion_stream(self, message):
         self._add_message(message=message, role="user")
         stream = self.client.chat.completions.create(
@@ -51,7 +49,7 @@ class OpenAI(Model):
             text_chunk = getattr(event.choices[0].delta, "content", None)
             if text_chunk:
                 yield text_chunk
-    
+
     def add_system_instructuion(self, instruction: str):
         pass
 

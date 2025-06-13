@@ -1,18 +1,18 @@
 from fastapi import APIRouter ,UploadFile, File, Form , HTTPException
 from fastapi.responses import FileResponse,StreamingResponse
 import json
-import os 
+import os
 import logging
 
 logger = logging.getLogger(__name__)
 
 from ..utils import read_config , write_config
 from .models.models import (
-    AgentsRequest , 
-    Message, 
-    FolderContent , 
-    FolderListResponse , 
-    FolderCreateRequest , 
+    AgentsRequest ,
+    Message,
+    FolderContent ,
+    FolderListResponse ,
+    FolderCreateRequest ,
     TitleRequest,
     AppendRequest,
 )
@@ -39,7 +39,7 @@ import asyncio
 
 router = APIRouter()
 """
-TODO: !!! Refactor is needed 
+TODO: !!! Refactor is needed
 INSANE REALLY NEED REFACTOR BROOO!!!
 """
 
@@ -52,17 +52,17 @@ async def get_config():
 @router.get("/select_folder")
 async def select_folder(folder_name: str):
     """
-    Change the column db to ./local_files/{the folder here} 
+    Change the column db to ./local_files/{the folder here}
     Return success true
     """
     folder_path = select_folder_handler(folder_name)
-    logger.info(f"{folder_path}") 
+    logger.info(f"{folder_path}")
     if not os.path.exists(folder_path):
         raise HTTPException(status_code=404, detail="Folder not found")
-    
+
     if not os.path.isdir(folder_path):
         raise HTTPException(status_code=400, detail="Path is not a directory")
-        
+
     return {"success": True, "selected_folder": folder_name}
 
 
@@ -103,12 +103,12 @@ async def create_folder(filepath: FolderCreateRequest):
 @router.get("/folder_list", response_model=FolderListResponse)
 async def get_folder():
     base_path = "./local_files"
-    
+
     if not os.path.exists(base_path):
         os.makedirs(base_path)
-        
+
     folder_list = []
-    
+
     try:
         for item in os.listdir(base_path):
             full_path = os.path.join(base_path, item)
@@ -118,11 +118,11 @@ async def get_folder():
                     foldername=item,
                     contents=contents
                 ))
-                
+
         return FolderListResponse(files=folder_list)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
 
 @router.post("/upload_file")
 async def upload_file(
@@ -135,29 +135,29 @@ async def upload_file(
     try:
         # Construct the full path
         full_path = os.path.join("./local_files", filepath)
-        
+
         # Check if the directory exists
         dir_path = os.path.dirname(full_path)
         if not os.path.exists(dir_path):
             raise HTTPException(status_code=404, detail="Directory not found")
-            
+
         # Save the file
         with open(full_path, "wb") as buffer:
             content = await file.read()
             buffer.write(content)
-            
+
         return {
             "success": True,
             "filename": file.filename,
             "filepath": filepath
         }
-        
+
     except Exception as e:
         return {
             "success": False,
             "error": str(e)
         }
-    
+
 @router.get("/get_titles")
 def get_titles():
     filename = "messages.json"
@@ -185,23 +185,23 @@ async def delete_file(filepath: str):
     try:
         # Construct the full path
         full_path = os.path.join("./local_files", filepath)
-        
+
         # Check if file exists
         if not os.path.exists(full_path):
             raise HTTPException(status_code=404, detail="File not found")
-            
+
         # Check if it's actually a file
         if not os.path.isfile(full_path):
             raise HTTPException(status_code=400, detail="Path is not a file")
-            
+
         # Delete the file
         os.remove(full_path)
-        
+
         return {
             "success": True,
             "deleted_file": filepath
         }
-        
+
     except Exception as e:
         return {
             "success": False,
@@ -217,32 +217,32 @@ async def download_file(filepath: str):
     try:
         # Construct the full path
         full_path = os.path.join("./local_files", filepath)
-        
+
         # Check if file exists
         if not os.path.exists(full_path):
             raise HTTPException(status_code=404, detail="File not found")
-            
+
         # Check if it's actually a file
         if not os.path.isfile(full_path):
             raise HTTPException(status_code=400, detail="Path is not a file")
-            
+
         # Get the filename from the path
         filename = os.path.basename(filepath)
-        
+
         # Return the file as a download
         return FileResponse(
             path=full_path,
             filename=filename,
             media_type='application/octet-stream'
         )
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/messags_record")
 async def get_messages_record():
     """
-        Read the message from the db ?  
+        Read the message from the db ?
     """
     pass
 
@@ -259,7 +259,7 @@ async def select_agent(body: AgentsRequest):
     config = read_config()
     config["agents"] = arr
     config["provider"] = body.provider
-    config["model"] = body.model 
+    config["model"] = body.model
     with open("./config.json", "w") as f:
         json.dump(config, f, indent=4)
     return {"success": True, "agents_received": body.agents , "model_received":body.model , "provider_received":body.provider}
@@ -309,7 +309,7 @@ async def stream_data(
     validated_messages = [Message(**msg) for msg in messages_list]
 
     logger.info(validated_messages)
-    
+
     config = read_config()
 
     quick_model: Model = Factory.get_model(config["provider"], config["model"])
@@ -317,13 +317,13 @@ async def stream_data(
 
     search_result = DuckSearch().search_result(query)
     """
-        TODO: do embedding here if content is relevant then don't search top 5 content maybe just top 2 content 
+        TODO: do embedding here if content is relevant then don't search top 5 content maybe just top 2 content
     """
-    prompt = quick_search_prompt(query , search_result) 
+    prompt = quick_search_prompt(query , search_result)
     # Example: call your model's completion method
     for chunk in quick_model.completion_stream(prompt):
         yield chunk
-        await asyncio.sleep(0) 
+        await asyncio.sleep(0)
 
 @router.post("/stream_completion/{query}")
 async def stream_response(
@@ -348,7 +348,7 @@ async def stream_academic_data(
     validated_messages = [Message(**msg) for msg in messages_list]
 
     logger.info(validated_messages)
-    
+
     config = read_config()
 
     quick_model: Model = Factory.get_model(config["provider"], config["model"])
@@ -359,13 +359,13 @@ async def stream_academic_data(
 
     search_result = DuckSearch().search_result("site:arxiv.org"+query)
     """
-        TODO: do embedding here if content is relevant then don't search top 5 content maybe just top 2 content 
+        TODO: do embedding here if content is relevant then don't search top 5 content maybe just top 2 content
     """
-    prompt = quick_search_prompt(query , search_result) 
+    prompt = quick_search_prompt(query , search_result)
     # Example: call your model's completion method
     for chunk in quick_model.completion_stream(prompt):
         yield chunk
-        await asyncio.sleep(0) 
+        await asyncio.sleep(0)
 
 
 @router.post("/stream_completion_academic/{query}")
@@ -400,7 +400,7 @@ async def report(
     file_details = []
     if files:
         for file in files:
-            # TODO clean the local_files 
+            # TODO clean the local_files
             content = await file.read()
             file_details.append({"filename": file.filename, "size": len(content)})
 
@@ -551,7 +551,7 @@ async def quick_response_logic(
     api: Optional[str] = None,
 ):
     """
-        TODO: don't call this twice 
+        TODO: don't call this twice
         TODO: streaming
     """
     config = read_config()
@@ -563,9 +563,9 @@ async def quick_response_logic(
 
     search_result = DuckSearch().search_result(query)
     """
-        TODO: do embedding here if content is relevant then don't search top 5 content maybe just top 2 content 
+        TODO: do embedding here if content is relevant then don't search top 5 content maybe just top 2 content
     """
-    prompt = quick_search_prompt(query , search_result) 
+    prompt = quick_search_prompt(query , search_result)
     # Example: call your model's completion method
     res = quick_model.completion(prompt)
     return res

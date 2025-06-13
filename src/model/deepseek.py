@@ -1,7 +1,6 @@
 from .model import Model
 
 from openai import OpenAI
-from dotenv import load_dotenv
 
 from crawl4ai import LLMConfig
 
@@ -10,7 +9,6 @@ import os
 
 class Deepseek(Model):
     def __init__(self, model, api_key: str = ""):
-        load_dotenv(override=True)
         self.api_key = os.getenv("DEEPSEEK_API") if api_key == "" else api_key
         self.model = model
         self.client = OpenAI(api_key=self.api_key, base_url="https://api.deepseek.com")
