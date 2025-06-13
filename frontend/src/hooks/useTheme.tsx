@@ -21,7 +21,7 @@ export function useTheme() {
 
 export function ThemeProvider({
   children,
-  defaultTheme = "light",
+  defaultTheme = "dark",
   storageKey = "ui-theme",
   ...props
 }: {
