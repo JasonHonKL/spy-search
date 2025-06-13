@@ -62,7 +62,7 @@ class Crawl:
     async def get_url_llm(self, url, query):
         """
         Get url from a website with the help of llm
-        TODO: Replace Do Do Duck 
+        TODO: Replace Do Do Duck
         """
         self.broswer_conf = BrowserConfig(headless=True)
         self.run_conf = CrawlerRunConfig(
@@ -287,7 +287,7 @@ class Crawl:
 
     def _download_pdf(self, url, save_path="./tmp"):
         """
-            Download every file ? 
+        Download every file ?
         """
         filename = url.rstrip("/").split("/")[-1]
         filename = filename.split("?")[0]

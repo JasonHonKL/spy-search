@@ -4,34 +4,40 @@ from fastapi import UploadFile
 """
     This files should handle 
 """
-def select_folder_handler(folder_name:str):
+
+
+def select_folder_handler(folder_name: str):
     folder_path = f"./local_files/{folder_name}"
 
     config = read_config()
-    config['db'] = folder_path
+    config["db"] = folder_path
 
     write_config(config)
     return folder_path
 
 
 def delete_folder_handler():
-    pass 
+    pass
+
 
 def get_folder_handler():
-    pass 
+    pass
+
 
 def upload_file_handler():
-    pass 
+    pass
+
 
 def delete_file_handler():
     pass
 
+
 def download_file_handler():
-    pass 
+    pass
 
 
 def extract_text_from_pdf_bytes(file_bytes: bytes) -> str:
-#    doc = fitz.open(stream=file_bytes, filetype="pdf")
+    #    doc = fitz.open(stream=file_bytes, filetype="pdf")
     """
     text = ""
     for page in doc:

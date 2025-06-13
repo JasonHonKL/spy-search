@@ -51,11 +51,11 @@ class Planner(Agent):
                 self.query,
             )
             res = self._model.completion(prompt)
-            
+
             logger.info(f"get response {res}")
 
             self._response_todo_handler(res)
-            
+
             self.initialize = True
 
             task = self._todo_list.pop_task()

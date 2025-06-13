@@ -1,12 +1,14 @@
 """
 This is the main function of the agent
 """
+
 from src.agent import Planner, Agent
 from src.router import Server, Router
 
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 async def generate_report(query, planner: Planner, agents: list[Agent]):
     """
@@ -32,5 +34,3 @@ async def generate_report(query, planner: Planner, agents: list[Agent]):
     report = report["data"]
 
     return report
-
-

@@ -1,13 +1,16 @@
 import os
 import json
 
+
 def create_env_file(path, content):
-    with open(path, 'w') as f:
+    with open(path, "w") as f:
         f.write(content.strip() + "\n")
 
+
 def create_json_file(path, content):
-    with open(path, 'w') as f:
+    with open(path, "w") as f:
         json.dump(content, f)
+
 
 if __name__ == "__main__":
     file_path = ".env"

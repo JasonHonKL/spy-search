@@ -1,14 +1,15 @@
 """
-    Generate Response Handler
+Generate Response Handler
 """
 
+
 def select_agent_handler():
-    pass 
+    pass
 
 
 def quicK_response_handler():
-    pass 
+    pass
+
 
 def stream_data_handler():
     pass
-

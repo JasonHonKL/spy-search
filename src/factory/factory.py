@@ -2,7 +2,7 @@
 Factory
 """
 
-from ..agent import Planner, Search_agent, Reporter, RAG_agent , Quick_searcher
+from ..agent import Planner, Search_agent, Reporter, RAG_agent, Quick_searcher
 
 from ..model import Gemini, Ollama, Deepseek, Model, Gork, OpenAI
 

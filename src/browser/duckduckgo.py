@@ -3,17 +3,23 @@ import requests
 from html import unescape
 from langchain_community.tools import DuckDuckGoSearchResults
 from bs4 import BeautifulSoup
-from concurrent.futures import ThreadPoolExecutor, as_completed , wait
+from concurrent.futures import ThreadPoolExecutor, as_completed, wait
 
-import time 
+import time
 
-import logging 
+import logging
+
 logger = logging.getLogger(__name__)
+
 
 class DuckSearch:
     def __init__(self):
-        self.search_engine = DuckDuckGoSearchResults(backend="text", output_format="list")
-        self.news_engine = DuckDuckGoSearchResults(backend="news", output_format="list", num_results=9)
+        self.search_engine = DuckDuckGoSearchResults(
+            backend="text", output_format="list"
+        )
+        self.news_engine = DuckDuckGoSearchResults(
+            backend="news", output_format="list", num_results=9
+        )
 
     def _extract_full_text(self, url: str, limit: int = 400) -> str:
         try:
@@ -25,7 +31,11 @@ class DuckSearch:
             paragraphs = soup.find_all("p")
 
             # Extract text, unescape HTML entities, strip whitespace
-            texts = [unescape(p.get_text(strip=True)) for p in paragraphs if p.get_text(strip=True)]
+            texts = [
+                unescape(p.get_text(strip=True))
+                for p in paragraphs
+                if p.get_text(strip=True)
+            ]
 
             text = " ".join(texts)
             logger.info(text)
@@ -35,10 +45,13 @@ class DuckSearch:
             logger.error(f"[ERROR] Failed to fetch {url} -> {e}")
             return ""
 
-    def search_result(self, query: str, k: int = 5, backend: str = "text", deep_search: bool = True) -> list:
+    def search_result(
+        self, query: str, k: int = 5, backend: str = "text", deep_search: bool = True
+    ) -> list:
         logger.info("start searching... ")
         results = self.search_engine.invoke(query)
         if deep_search:
+
             def _extract_and_update(result):
                 url = result.get("link")
                 full_text = self._extract_full_text(url)
@@ -46,7 +59,10 @@ class DuckSearch:
                 return result
 
             with ThreadPoolExecutor(max_workers=k) as executor:
-                futures = [executor.submit(_extract_and_update, result) for result in results[:k]]
+                futures = [
+                    executor.submit(_extract_and_update, result)
+                    for result in results[:k]
+                ]
                 done, not_done = wait(futures, timeout=4)
                 for future in not_done:
                     future.cancel()

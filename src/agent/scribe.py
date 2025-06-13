@@ -1,8 +1,10 @@
-from .agent import Agent    
+from .agent import Agent
+
 
 class Scribe(Agent):
     """
-        A short writer.  To spped up the generate report speed 
-        It should be done with 
+    A short writer.  To spped up the generate report speed
+    It should be done with
     """
-    pass 
+
+    pass

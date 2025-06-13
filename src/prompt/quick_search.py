@@ -1,5 +1,6 @@
 import datetime
 
+
 def quick_search_prompt(query, data):
     return f"""
     Today is {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}.

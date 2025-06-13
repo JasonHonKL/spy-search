@@ -9,8 +9,10 @@ import json
 
 import time
 
-import logging 
+import logging
+
 logger = logging.getLogger(__name__)
+
 
 class Reporter(Agent):
     def __init__(self, model: Model):
@@ -44,9 +46,9 @@ class Reporter(Agent):
 
         # problem it is not yet response and then it return and the problem is it can't extract correct res afterward
         tasks = self._extract_response(res)
-       # tasks = json.loads(tasks)
+        # tasks = json.loads(tasks)
 
-        logger.info(f"handling tasks {tasks}") 
+        logger.info(f"handling tasks {tasks}")
 
         r = self._task_handler(tasks)
 
@@ -129,8 +131,8 @@ class Reporter(Agent):
                 logger.info(type(res))
             except:
                 final_report += ""
-            logger.info("final report ... ") # maybe yield final report here ?
-            
+            logger.info("final report ... ")  # maybe yield final report here ?
+
         return final_report
 
     def _get_relevant_data(self):

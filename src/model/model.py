@@ -48,5 +48,5 @@ class Model(ABC):
         pass
 
     @abstractmethod
-    def completion_stream(self , message):
+    def completion_stream(self, message):
         pass

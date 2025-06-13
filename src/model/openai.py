@@ -13,14 +13,13 @@ class OpenAI(Model):
         self.api_key = os.getenv("OPENAI_API_KEY")
 
         config = read_config()
-        if config.get("base_url" , "") == "" :
+        if config.get("base_url", "") == "":
             self.client = openai(
                 api_key=self.api_key,
             )
         else:
             self.client = openai(
-               api_key=self.api_key,
-               base_url=config.get("base_url" , "")
+                api_key=self.api_key, base_url=config.get("base_url", "")
             )
 
         self.model = model
