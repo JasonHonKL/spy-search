@@ -2,9 +2,9 @@
     "provider": "openai",
     "model": "llama-3.3-70b",
     "agents": [
-        "reporter",
-        "searcher"
+        "reporter"
     ],
     "db": "./local_files/test",
-    "base_url": "https://api.cerebras.ai/v1"
+    "base_url": "https://api.cerebras.ai/v1",
+    "language": "en"
 }

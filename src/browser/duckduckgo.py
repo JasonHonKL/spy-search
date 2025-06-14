@@ -377,7 +377,8 @@ class DuckSearch:
         logger.info(f"Starting blazing search for query: '{query}'")
         
         try:
-            results = self.search_engine.invoke(query)
+            results = self.search_engine.invoke(query , max_results=4)
+            logger.info(results)
             if not results:
                 logger.info(f"No initial results found for query: '{query}'.")
                 return []
