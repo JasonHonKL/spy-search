@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
+
 import re
 import json
+import ast
 
 from pydantic import BaseModel
 
@@ -36,10 +38,11 @@ class Agent(ABC):
 
     def _extract_response(self, res: str):
         """
-        Extract JSON from a string that may contain markdown code blocks or plain JSON.
-        Handles both objects {} and arrays [].
+        Extract JSON or Python literal from a string that may contain markdown code blocks or plain text.
+        Handles both JSON (double quotes) and Python literals (single quotes).
+        Returns a Python dict or list (parsed), or None if no valid data found.
         """
-        # First, try to extract from markdown code blocks
+        # Extract markdown code blocks first
         markdown_pattern = r"```(?:json\s*)?\n?(.*?)\n?```"
         markdown_matches = re.findall(markdown_pattern, res, re.DOTALL)
 
@@ -47,22 +50,23 @@ class Agent(ABC):
             match = match.strip()
             if match.startswith(("{", "[")):
                 try:
-                    json.loads(match)
-                    return match
+                    parsed = json.loads(match)
+                    return parsed
                 except json.JSONDecodeError:
-                    continue
+                    try:
+                        parsed = ast.literal_eval(match)
+                        return parsed
+                    except Exception:
+                        continue
 
-        # If no markdown blocks found, look for plain JSON in the string
-        # Find potential JSON objects and arrays
+        # Find JSON or Python literals in plain string
         json_candidates = []
-        # Find objects starting with { and arrays starting with [
         for start_char, end_char in [("{", "}"), ("[", "]")]:
             start_idx = 0
             while True:
                 start_pos = res.find(start_char, start_idx)
                 if start_pos == -1:
                     break
-                # Find the matching closing bracket/brace
                 bracket_count = 0
                 end_pos = start_pos
                 for i in range(start_pos, len(res)):
@@ -78,10 +82,21 @@ class Agent(ABC):
                     candidate = res[start_pos : end_pos + 1].strip()
                     json_candidates.append(candidate)
                 start_idx = start_pos + 1
-        for candidate in reversed(json_candidates):
+
+        valid_candidates = []
+        for candidate in json_candidates:
             try:
-                json.loads(candidate)
-                return candidate
+                parsed = json.loads(candidate)
+                valid_candidates.append((candidate, parsed))
             except json.JSONDecodeError:
-                continue
+                try:
+                    parsed = ast.literal_eval(candidate)
+                    valid_candidates.append((candidate, parsed))
+                except Exception:
+                    continue
+
+        if valid_candidates:
+            largest = max(valid_candidates, key=lambda x: len(x[0]))
+            return largest[1]
+
         return None

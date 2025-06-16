@@ -1,7 +1,9 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Settings2, Brain, Database } from "lucide-react";
@@ -42,13 +44,6 @@ export const AgentConfig = ({ agents, onAgentConfigSave }: AgentConfigProps) => 
     { value: "deepseek", label: "DeepSeek" },
     { value: "ollama", label: "Ollama" }
   ];
-
-  const modelOptions: Record<string, string[]> = {
-    openai: ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"],
-    grok: ["grok-beta", "grok-2-1212", "grok-2-vision-1212"],
-    deepseek: ["deepseek-chat", "deepseek-reasoner"],
-    ollama: ["llama2", "codellama", "mistral", "neural-chat"]
-  };
 
   // Fetch current config from backend
   useEffect(() => {
@@ -174,21 +169,20 @@ export const AgentConfig = ({ agents, onAgentConfigSave }: AgentConfigProps) => 
               <Settings2 className="h-5 w-5 text-primary" />
               Model Selection
             </CardTitle>
-            <CardDescription>Choose the specific model for your provider</CardDescription>
+            <CardDescription>Enter the specific model name for your provider</CardDescription>
           </CardHeader>
-          <CardContent>
-            <Select value={model} onValueChange={setModel}>
-              <SelectTrigger className="apple-input">
-                <SelectValue placeholder="Select model" />
-              </SelectTrigger>
-              <SelectContent>
-                {(modelOptions[provider] || []).map((m) => (
-                  <SelectItem key={m} value={m}>
-                    {m}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <CardContent className="space-y-3">
+            <Label htmlFor="model" className="text-foreground font-medium">
+              Model Name
+            </Label>
+            <Input
+              id="model"
+              type="text"
+              placeholder="Enter model name (e.g., gpt-4, claude-3-opus, deepseek-chat)"
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              className="apple-input"
+            />
           </CardContent>
         </Card>
       )}

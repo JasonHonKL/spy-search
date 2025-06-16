@@ -107,7 +107,7 @@ class Search_agent(Agent):
         response = self.model.completion(prompt)
         logger.info(f"searcher response: {response}")
         time.sleep(3) ## foo foo solution
-        todo_list = json.loads(self._extract_response(response))
+        todo_list = (self._extract_response(response))
         
         logger.info(todo_list)
         k -= len(todo_list)
@@ -126,6 +126,7 @@ class Search_agent(Agent):
         """
         # test with google first
         # result is an array 
+        #TODO update with duckduckgo
 
         logger.info("Search URL handling ... ")
 
@@ -138,7 +139,7 @@ class Search_agent(Agent):
             return None # no url
         urls =[]
         for element in self.url_list:
-            urls.append(element['url'])
+            urls.append(element.get('url' , ""))
         summary_list = await self.crawl.get_summary(urls , query)
 
         for summary in summary_list:

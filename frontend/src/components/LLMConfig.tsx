@@ -36,13 +36,6 @@ export const LLMConfig = ({ config, onConfigSave }: LLMConfigProps) => {
     { value: "ollama", label: "Ollama" }
   ];
 
-  const modelOptions: Record<string, string[]> = {
-    openai: ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"],
-    anthropic: ["claude-3-opus", "claude-3-sonnet", "claude-3-haiku"],
-    deepseek: ["deepseek-chat", "deepseek-coder"],
-    ollama: ["llama2", "codellama", "mistral", "neural-chat"]
-  };
-
   const availableAgents = [
     { id: "planner", label: "Planner", required: true },
     { id: "searcher", label: "Searcher", required: false },
@@ -131,18 +124,14 @@ export const LLMConfig = ({ config, onConfigSave }: LLMConfigProps) => {
             <Label htmlFor="model" className="text-foreground font-medium">
               Model
             </Label>
-            <Select value={model} onValueChange={setModel}>
-              <SelectTrigger className="apple-input">
-                <SelectValue placeholder="Select model" />
-              </SelectTrigger>
-              <SelectContent>
-                {(modelOptions[provider] || []).map((m) => (
-                  <SelectItem key={m} value={m}>
-                    {m}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Input
+              id="model"
+              type="text"
+              placeholder="Enter model name (e.g., gpt-4, claude-3-opus, deepseek-chat)"
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              className="apple-input"
+            />
           </div>
         </CardContent>
       </Card>

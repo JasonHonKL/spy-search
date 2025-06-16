@@ -2,7 +2,7 @@
 Factory
 """
 
-from ..agent import Planner, Search_agent, Reporter, RAG_agent
+from ..agent import Planner, Search_agent, Reporter, RAG_agent, Quick_searcher
 from ..agent.notion import NotionAgent
 from ..model import Gemini, Ollama, Deepseek, Model, Gork, OpenAI
 
@@ -14,7 +14,7 @@ class Factory:
         elif agent_name == "reporter":
             return Reporter(model)
         elif agent_name == "searcher":
-            return Search_agent(model)
+            return Quick_searcher(model)
         elif agent_name == "notion":
             return NotionAgent(model)
         elif agent_name == "local-retrieval":

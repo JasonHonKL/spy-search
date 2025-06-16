@@ -10,7 +10,7 @@ import os
 
 class Deepseek(Model):
     def __init__(self, model, api_key: str = ""):
-        load_dotenv()
+        load_dotenv(override=True)
         self.api_key = os.getenv("DEEPSEEK_API") if api_key == "" else api_key
         self.model = model
         self.client = OpenAI(api_key=self.api_key, base_url="https://api.deepseek.com")
@@ -43,3 +43,13 @@ class Deepseek(Model):
 
     def _add_message(self, message, role="use"):
         self.messages.append({"role": "user", "content": message})
+
+    def completion_stream(self, message):
+        self._add_message(message=message, role="user")
+        stream = self.client.chat.completions.create(
+            model=self.model, messages=self.messages, stream=True
+        )
+        for event in stream:
+            text_chunk = getattr(event.choices[0].delta, "content", None)
+            if text_chunk:
+                yield text_chunk

@@ -23,11 +23,21 @@ class Ollama(Model):
             res = chat(model=self.model, messages=self.messages, stream=False)
             self._append_message(role="assistant", message=res["message"]["content"])
         else:
+            """
+            Should be removed
+            """
             res = chat(model=self.model, messages=self.messages, stream=True)
             for chunk in res:
                 msg_cache += chunk["message"]["content"]
                 print(chunk["message"]["content"], end="", flush=True)
         return res["message"]["content"] if stream == False else msg_cache
+
+    def completion_stream(self, message: str):
+        self._append_message(message=message, role="user")
+        res = chat(model=self.model, messages=self.messages, stream=True)
+        for chunk in res:
+            if chunk["message"]["content"]:
+                yield chunk["message"]["content"]
 
     def get_client(self):
         client = OpenAI(

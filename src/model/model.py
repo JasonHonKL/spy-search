@@ -46,3 +46,7 @@ class Model(ABC):
     @abstractmethod
     def clear_message(self):
         pass
+
+    @abstractmethod
+    def completion_stream(self, message):
+        pass

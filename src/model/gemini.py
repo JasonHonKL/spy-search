@@ -17,7 +17,7 @@ from .model import Model
 
 class Gemini(Model):
     def __init__(self, model):
-        load_dotenv()
+        load_dotenv(override=True)
         self.api_key = os.getenv("GEMINI_API")
         self.model = model
         self.client = genai.Client(api_key=self.api_key)

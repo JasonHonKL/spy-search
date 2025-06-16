@@ -38,6 +38,7 @@ def report_plan(query: str, short_summaries: Dict[str, str]) -> str:
         - Clearly indicate which summary tags you will use as citations for each section, as referencing these sources strengthens the report.
         - There could be multiple referral
         - Make sure the plan is detail enough for complex problem, concise enough for easy problem.
+        - You plan at the same time should be a good structure, think how to plan your writing as a professional writter.
 
         Respond with a JSON array in the following format:
 
@@ -74,6 +75,7 @@ def report_task(tasks, task, source):
         - The content should be approximately 400-500 words.
         - Please ensure accuracy and clarity in your report.
         - Ensure the content is coherent.
+        - Use markdown to response
 
         Respond in the following JSON format:
 

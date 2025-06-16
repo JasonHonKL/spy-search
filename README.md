@@ -3,15 +3,15 @@
 **Spy Search** is an agentic search framework designed to outperform current web search agents with a focus on faster, more efficient daily usage.
 
 While commercial solutions like Manus charge $200 per month, Spy Search leverages open-source models to provide a cost-effective alternative without sacrificing performance.
-Currently our searching-speed is quite slow yet we can generate a long length consistent report (around 2000 words) with latest current infomration! This problem will be tackle after the release of v1.0. 
+Currently our searching-speed is quite slow yet we can generate a long length consistent report (around 2000 words) with latest current information! This problem will be tackle after the release of v1.0. 
 
+##### [簡體中文](./docs/ch_simplify.md) 
+##### [繁體中文](./docs/ch_complex.md)
+##### [日本語](./docs/jap.md)
 ---
 
 ## Roadmap
-**News**: Spy-searcher has just released v0.3 ! 
-
-- **Version 1.0:** Agentic Search Functionality  
-- **Version 2.0:** Localized Cache to Accelerate Search Speed  
+**News**: 2025-06-10 Spy-searcher has just released v0.3 ! 
 
 ---
 
@@ -32,39 +32,42 @@ Add your API key in the .env file if you want to use API. Currently we support o
 config the config.json file, you may copy the following template
 ```json
 {
-    "provider": "ollama",
-    "model": "deepseek-r1:7b",
+    "provider": "openai",
+    "model": "",
     "agents": [
-        "reporter"
-    ]
+        "reporter",
+        "searcher"
+    ],
+    "db": "./local_files/test",
+    "base_url": "https://openrouter.ai/api/v1"
 }
 ```
 
-After that run 
+After that run (due to some problem some computers espically using ollama may have some issue) If you are a developer we strongly suggest you follow the guide from contributing .md which is much more convience. 
 ```shell
 docker build -t spy-searcher .   
 docker run -p 8000:8000 -p 8080:8080 spy-searcher
 ```
 
 Now you can access  
-[http://localhost:8000](http://localhost:8000)
+[http://localhost:8000](http://localhost:8080)
 
 
 ## Community 
 [Discord](https://discord.gg/rrsMgBdJJt)
 
 
-## Example 
-
-- [Example Report (HTML)](./docs/examples/example_report.html)
-
-![Example Search](./docs/examples/example_search.png)
-
 ## Demo Video
 
 Watch the demo video on YouTube:
 
-[![Demo Video](https://img.youtube.com/vi/Dgb33BHtRwQ/0.jpg)](https://youtu.be/Dgb33BHtRwQ)
+
+https://github.com/user-attachments/assets/3e6ef332-d055-421c-bf0a-5f866ba52b11
+
+
+
+
+[old version video](https://www.youtube.com/watch?v=Dgb33BHtRwQ)
 
 ## Contributing
 

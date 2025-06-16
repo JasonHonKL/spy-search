@@ -24,19 +24,23 @@ RUN apt-get update && apt-get install -y \
     libxshmfence1 \
     libglib2.0-0 \
     npm \
+    dos2unix \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy all files into the container
+# Copy all files first
 COPY . .
 
-# Make sure installation.sh and run.sh are executable
-RUN chmod +x /app/installation.sh /app/run.sh
+# Convert line endings for shell scripts
+RUN dos2unix installation.sh run.sh && \
+    sed -i 's/\r$//' installation.sh && \
+    sed -i 's/\r$//' run.sh && \
+    chmod +x installation.sh run.sh
 
 # Run installation.sh to install python packages, playwright, npm deps, etc.
-RUN ./installation.sh
+RUN /bin/sh installation.sh
 
 # Expose backend and frontend ports
 EXPOSE 8000 8080
 
 # Use run.sh as the container entrypoint
-ENTRYPOINT ["/app/run.sh"]
+ENTRYPOINT ["/bin/sh", "run.sh"]

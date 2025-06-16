@@ -51,11 +51,11 @@ class Planner(Agent):
                 self.query,
             )
             res = self._model.completion(prompt)
-            
+
             logger.info(f"get response {res}")
 
             self._response_todo_handler(res)
-            
+
             self.initialize = True
 
             task = self._todo_list.pop_task()
@@ -90,9 +90,8 @@ class Planner(Agent):
         For planner json response should be handling an array []
         add everything into the todo list queue
         """
-        texts = self._extract_response(json_response)
-        logger.info(f"handling texts {texts}")
-        obj = json.loads(texts)
+        obj = self._extract_response(json_response)
+        logger.info(f"handling task {obj}")
         for response in obj:
             task = response["task"]
             agent = response["agent"]

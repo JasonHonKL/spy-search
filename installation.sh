@@ -1,22 +1,31 @@
 #!/bin/sh
 
-python setup.py
-
+# Check if uv is installed
 command_exists() {
   command -v "$1" > /dev/null 2>&1
 }
 
-# Check if uvicorn is installed
-if command_exists uvicorn; then
-  echo "uvicorn is installed, running uvicorn pip install..."
+if command_exists uv; then
+  echo "uv is installed"
 else
-  echo "uvicorn not found, installing uvicorn..."
-  pip install uvicorn || { echo "Failed to install uvicorn"; exit 1; }
+  echo "uv not found, installing uv..."
+  pip install uv || { echo "Failed to install uv"; exit 1; }
 fi
 
-# Use pip to install requirements (uvicorn is already installed if needed)
-pip install -r requirements.txt || { echo "pip install failed"; exit 1; }
+# Create a virtual environment if it doesn't exist
+if [ ! -d ".venv" ]; then
+  echo "Creating virtual environment..."
+  uv venv || { echo "Failed to create virtual environment"; exit 1; }
+fi
 
+# Activate the virtual environment
+. .venv/bin/activate || { echo "Failed to activate virtual environment"; exit 1; }
+echo "Virtual environment activated"
+
+# Install uvicorn and other requirements
+uv pip install uvicorn || { echo "Failed to install uvicorn"; exit 1; }
+uv pip install -r requirements.txt || { echo "Failed to install requirements"; exit 1; }
+
+# Navigate to frontend directory and install npm dependencies
 cd frontend || { echo "Failed to enter frontend directory"; exit 1; }
-
-npm install || { echo "npm install failed"; exit 1; }
+npm install --legacy-peer-deps || { echo "npm install failed"; exit 1; }

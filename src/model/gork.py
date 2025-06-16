@@ -10,7 +10,7 @@ import os
 
 class Gork(Model):
     def __init__(self, model: str = "", api_key: str = ""):
-        load_dotenv()
+        load_dotenv(override=True)
         self.api_key = os.getenv("XAI_API_KEY")
         self.model = model
         self.client = OpenAI(
@@ -44,5 +44,15 @@ class Gork(Model):
     def clear_message(self):
         self.messages = []
 
-    def _add_message(self, message, role="use"):
+    def _add_message(self, message, role="user"):
         self.messages.append({"role": "user", "content": message})
+
+    def completion_stream(self, message):
+        self._add_message(message=message, role="user")
+        stream = self.client.chat.completions.create(
+            model=self.model, messages=self.messages, stream=True
+        )
+        for event in stream:
+            text_chunk = getattr(event.choices[0].delta, "content", None)
+            if text_chunk:
+                yield text_chunk

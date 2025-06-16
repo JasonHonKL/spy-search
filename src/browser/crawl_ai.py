@@ -31,6 +31,9 @@ class Crawl:
         get_links: given a url which is the result from a search website like google return the result list of that page
         get_images: get all images from the webpage
         get_content: get relevant content to a markdown
+
+
+    we need to find a faster method
     """
 
     def __init__(self, model: Model, db=None, url_search=None):
@@ -59,12 +62,12 @@ class Crawl:
     async def get_url_llm(self, url, query):
         """
         Get url from a website with the help of llm
+        TODO: Replace Do Do Duck
         """
         self.broswer_conf = BrowserConfig(headless=True)
         self.run_conf = CrawlerRunConfig(
             cache_mode=CacheMode.BYPASS,
             word_count_threshold=1,
-            page_timeout=5000,
             extraction_strategy=LLMExtractionStrategy(
                 llm_config=self.model.get_llm_config(),
                 schema=Url_result.model_json_schema(),
@@ -283,6 +286,9 @@ class Crawl:
         pass
 
     def _download_pdf(self, url, save_path="./tmp"):
+        """
+        Download every file ?
+        """
         filename = url.rstrip("/").split("/")[-1]
         filename = filename.split("?")[0]
         # Ensure the filename ends with .pdf

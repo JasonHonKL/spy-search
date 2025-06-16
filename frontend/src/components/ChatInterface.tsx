@@ -1,20 +1,18 @@
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
-import { Send, User, Bot, Loader2, Download, Copy, Check, Search, Zap, FileText, Upload, X } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Bot, Sparkles, TrendingUp, Globe, Cpu, Heart, Bitcoin, Microscope, User } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { MessageList } from "./chat/MessageList";
+import { ChatInput } from "./chat/ChatInput";
+import { useStreamingChat } from "@/hooks/useStreamingChat";
 
 interface Message {
   id: string;
   type: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  responseTime?: number;
 }
 
 interface ChatInterfaceProps {
@@ -23,554 +21,174 @@ interface ChatInterfaceProps {
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   isLoading: boolean;
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  currentConversationId?: string | null;
+  onConversationCreated?: (title: string) => void;
+  refreshConversations?: () => Promise<void>;
 }
 
-export const ChatInterface = ({ agents, messages, setMessages, isLoading, setIsLoading }: ChatInterfaceProps) => {
+export const ChatInterface = ({ 
+  agents, 
+  messages, 
+  setMessages, 
+  isLoading, 
+  setIsLoading,
+  currentConversationId,
+  onConversationCreated,
+  refreshConversations
+}: ChatInterfaceProps) => {
   const [input, setInput] = useState("");
-  const [copied, setCopied] = useState<string | null>(null);
-  const [isDeepResearch, setIsDeepResearch] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [isDragOver, setIsDragOver] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
+  const [searchMode, setSearchMode] = useState(true);
 
-  // Save messages to localStorage whenever messages change
-  useEffect(() => {
-    const messagesToSave = messages.map(msg => ({
-      ...msg,
-      timestamp: msg.timestamp.toISOString() // Convert Date to string for storage
-    }));
-    localStorage.setItem('spy-search-messages', JSON.stringify(messagesToSave));
-  }, [messages]);
+  const { sendStreamingMessage, streamingMessageId } = useStreamingChat({
+    messages,
+    setMessages,
+    setIsLoading,
+    currentConversationTitle: currentConversationId,
+    onConversationCreated,
+    refreshConversations
+  });
 
-  // Save loading state to localStorage
-  useEffect(() => {
-    localStorage.setItem('spy-search-loading', JSON.stringify(isLoading));
-  }, [isLoading]);
-
-  // Load messages and loading state from localStorage on component mount
-  useEffect(() => {
-    const savedMessages = localStorage.getItem('spy-search-messages');
-    const savedLoading = localStorage.getItem('spy-search-loading');
-    
-    if (savedMessages && messages.length === 0) {
-      try {
-        const parsedMessages = JSON.parse(savedMessages);
-        const messagesWithDates = parsedMessages.map((msg: any) => ({
-          ...msg,
-          timestamp: new Date(msg.timestamp) // Convert string back to Date
-        }));
-        setMessages(messagesWithDates);
-      } catch (error) {
-        console.error('Failed to load messages from localStorage:', error);
-      }
-    }
-
-    if (savedLoading) {
-      try {
-        const parsedLoading = JSON.parse(savedLoading);
-        setIsLoading(parsedLoading);
-      } catch (error) {
-        console.error('Failed to load loading state from localStorage:', error);
-      }
-    }
-  }, [setMessages, setIsLoading, messages.length]);
-
-  // Clear localStorage when user explicitly clears chat
   const clearChat = () => {
     setMessages([]);
-    localStorage.removeItem('spy-search-messages');
-    localStorage.removeItem('spy-search-loading');
     setIsLoading(false);
   };
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const handleSendMessage = async (messageContent: string, files: File[], isDeepResearch: boolean) => {
+    await sendStreamingMessage(messageContent, files, isDeepResearch);
   };
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const handleFileUpload = (files: FileList | null) => {
-    if (!files) return;
-    
-    const pdfFiles = Array.from(files).filter(file => file.type === 'application/pdf');
-    if (pdfFiles.length === 0) {
-      toast({
-        title: "Invalid file type",
-        description: "Only PDF files are allowed.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setUploadedFiles(prev => [...prev, ...pdfFiles]);
+  const handlePromptClick = (promptText: string) => {
+    setInput(promptText);
+    setSearchMode(true);
   };
 
-  const removeFile = (index: number) => {
-    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    handleFileUpload(e.dataTransfer.files);
-  };
-
-  const sendMessage = async () => {
-    if (!input.trim() || isLoading) return;
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      type: 'user',
-      content: input.trim(),
-      timestamp: new Date(),
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    const currentInput = input.trim();
-    setInput("");
-    setIsLoading(true);
-
-    try {
-      const endpoint = isDeepResearch ? 'report' : 'quick';
-      const encodedQuery = encodeURIComponent(currentInput);
-      
-      // Convert messages to the required format (including the current query)
-      const allMessages = [...messages, userMessage];
-      const formattedMessages = allMessages.map(msg => ({
-        role: msg.type === 'user' ? 'user' : 'assistant',
-        content: msg.content
-      }));
-
-      const formData = new FormData();
-      formData.append('messages', JSON.stringify(formattedMessages));
-      
-      uploadedFiles.forEach(file => {
-        formData.append('files', file);
-      });
-
-      const response = await fetch(`http://localhost:8000/${endpoint}/${encodedQuery}`, {
-        method: 'POST',
-        body: formData,
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      if (data.error) {
-        throw new Error(data.error);
-      }
-      
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        type: 'assistant',
-        content: data.report,
-        timestamp: new Date(),
-      };
-
-      setMessages(prev => [...prev, assistantMessage]);
-      setUploadedFiles([]);
-    } catch (error) {
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        type: 'assistant',
-        content: "Sorry, I encountered an error while generating your report. Please try again.",
-        timestamp: new Date(),
-      };
-
-      setMessages(prev => [...prev, errorMessage]);
-      
-      toast({
-        title: "Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate report",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
-
-  const copyToClipboard = async (content: string, messageId: string) => {
-    try {
-      await navigator.clipboard.writeText(content);
-      setCopied(messageId);
-      setTimeout(() => setCopied(null), 2000);
-      toast({
-        title: "Copied!",
-        description: "Message copied to clipboard.",
-      });
-    } catch (err) {
-      toast({
-        title: "Copy Failed",
-        description: "Failed to copy message to clipboard.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const downloadAsMarkdown = (content: string) => {
-    const blob = new Blob([content], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `spy-search-report-${new Date().toISOString().slice(0, 10)}.md`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: "Downloaded!",
-      description: "Report downloaded as markdown file.",
-    });
-  };
-
-  const downloadAsPDF = (content: string) => {
-    // Convert markdown content to basic HTML for PDF
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Spy Search Report</title>
-        <meta charset="UTF-8">
-        <style>
-          body { 
-            font-family: Arial, sans-serif; 
-            line-height: 1.6; 
-            margin: 40px; 
-            color: #333;
-          }
-          h1, h2, h3 { 
-            color: #2c3e50; 
-            margin-top: 30px;
-            margin-bottom: 15px;
-          }
-          h1 { font-size: 24px; }
-          h2 { font-size: 20px; }
-          h3 { font-size: 16px; }
-          p { margin-bottom: 12px; }
-          pre { 
-            background: #f8f9fa; 
-            padding: 15px; 
-            border-radius: 5px; 
-            border-left: 4px solid #007acc;
-            overflow-x: auto;
-            white-space: pre-wrap;
-          }
-          code {
-            background: #f1f3f4;
-            padding: 2px 4px;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-          }
-          ul, ol { margin-bottom: 15px; }
-          li { margin-bottom: 5px; }
-          .report-header {
-            text-align: center;
-            border-bottom: 2px solid #007acc;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-          }
-          .timestamp {
-            color: #666;
-            font-size: 12px;
-            text-align: right;
-            margin-top: 20px;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="report-header">
-          <h1>Spy Search Intelligence Report</h1>
-        </div>
-        <div class="report-content">
-          <pre>${content}</pre>
-        </div>
-        <div class="timestamp">
-          Generated on: ${new Date().toLocaleString()}
-        </div>
-      </body>
-      </html>
-    `;
-    
-    const blob = new Blob([htmlContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `spy-search-report-${new Date().toISOString().slice(0, 10)}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: "Downloaded!",
-      description: "Report downloaded as HTML file (can be printed to PDF).",
-    });
-  };
-
-  const isLongReport = (content: string) => content.length > 500;
+  const promptSuggestions = [
+    { text: "Latest technology breakthroughs", icon: Cpu },
+    { text: "Climate change recent developments", icon: Globe },
+    { text: "Stock market analysis today", icon: TrendingUp },
+    { text: "AI developments and news", icon: Bot },
+    { text: "Space exploration updates", icon: Sparkles },
+    { text: "Health and wellness trends", icon: Heart },
+    { text: "Cryptocurrency market movements", icon: Bitcoin },
+    { text: "Recent scientific discoveries", icon: Microscope }
+  ];
 
   return (
-    <div className="flex flex-col h-[600px] max-w-4xl mx-auto">
-      {/* Chat Messages */}
-      <Card className="flex-1 glass-card border-0 mb-4 min-h-0">
-        <CardContent className="p-0 h-full">
-          <ScrollArea className="h-full p-6">
-            {messages.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-center">
-                <div className="space-y-4">
-                  <Bot className="h-12 w-12 text-primary mx-auto" />
-                  <div>
-                    <h3 className="text-lg font-medium text-foreground">Welcome to Spy Search</h3>
-                    <p className="text-muted-foreground">Start a conversation to generate intelligence reports</p>
-                    {localStorage.getItem('spy-search-messages') && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={clearChat}
-                        className="mt-2"
-                      >
-                        Clear Chat History
-                      </Button>
-                    )}
-                  </div>
-                </div>
+    <div className="flex flex-col h-full max-w-none mx-auto bg-gradient-to-br from-gray-50/20 to-white/40 dark:from-gray-900/20 dark:to-gray-800/20">
+      {messages.length === 0 ? (
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-4 overflow-hidden">
+          <div className="w-full max-w-4xl mx-auto text-center">
+            {/* Hero Section */}
+            <div className="mb-6">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-primary/90 via-blue-500/90 to-purple-500/90 rounded-2xl mb-3 shadow-lg shadow-primary/15">
+                <Sparkles className="h-5 w-5 text-white" />
               </div>
-            ) : (
-              <div className="space-y-6">
-                {/* Clear chat button when messages exist */}
-                <div className="flex justify-end">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearChat}
-                    className="text-xs text-muted-foreground hover:text-foreground"
-                  >
-                    Clear Chat
-                  </Button>
-                </div>
-                
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex gap-4 ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    {message.type === 'assistant' && (
-                      <div className="flex-shrink-0">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Bot className="h-4 w-4 text-primary" />
-                        </div>
-                      </div>
-                    )}
-                    
-                    <div className={`max-w-[80%] min-w-0 ${message.type === 'user' ? 'order-2' : ''}`}>
-                      <div
-                        className={`rounded-2xl px-4 py-3 ${
-                          message.type === 'user'
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-secondary/50 text-foreground border border-border/50'
-                        }`}
-                      >
-                        <pre className="whitespace-pre-wrap text-sm leading-relaxed font-sans break-words">
-                          {message.content}
-                        </pre>
-                      </div>
-                      
-                      {message.type === 'assistant' && (
-                        <div className="flex gap-2 mt-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => copyToClipboard(message.content, message.id)}
-                            className="h-7 px-2 text-xs"
-                          >
-                            {copied === message.id ? (
-                              <>
-                                <Check className="h-3 w-3 mr-1" />
-                                Copied
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="h-3 w-3 mr-1" />
-                                Copy
-                              </>
-                            )}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => downloadAsMarkdown(message.content)}
-                            className="h-7 px-2 text-xs"
-                          >
-                            <FileText className="h-3 w-3 mr-1" />
-                            MD
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => downloadAsPDF(message.content)}
-                            className="h-7 px-2 text-xs"
-                          >
-                            <Download className="h-3 w-3 mr-1" />
-                            PDF
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-
-                    {message.type === 'user' && (
-                      <div className="flex-shrink-0 order-3">
-                        <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
-                          <User className="h-4 w-4 text-foreground" />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-                
-                {isLoading && (
-                  <div className="flex gap-4 justify-start">
-                    <div className="flex-shrink-0">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Bot className="h-4 w-4 text-primary" />
-                      </div>
-                    </div>
-                    <div className="max-w-[80%]">
-                      <div className="rounded-2xl px-4 py-3 bg-secondary/50 text-foreground border border-border/50">
-                        <div className="flex items-center gap-2">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span className="text-sm">Generating {isDeepResearch ? 'deep research' : 'quick'} report...</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                <div ref={messagesEndRef} />
-              </div>
-            )}
-          </ScrollArea>
-        </CardContent>
-      </Card>
-
-      {/* Input Area */}
-      <Card className="glass-card border-0 flex-shrink-0">
-        <CardContent className="p-4">
-          {/* Research Mode Toggle */}
-          <div className="flex items-center justify-center gap-3 mb-4 p-3 bg-secondary/30 rounded-xl">
-            <div className="flex items-center gap-3">
-              <Zap className="h-4 w-4 text-primary" />
-              <Label htmlFor="research-mode" className="text-sm font-medium">
-                Quick Response
-              </Label>
-              <Switch
-                id="research-mode"
-                checked={isDeepResearch}
-                onCheckedChange={setIsDeepResearch}
-                className="data-[state=checked]:bg-primary"
+              
+              <h1 className="text-2xl font-light text-gray-900 dark:text-white mb-3 tracking-tight leading-tight">
+                What would you like to
+                <span className="block bg-gradient-to-r from-primary/90 via-blue-500/90 to-purple-500/90 bg-clip-text text-transparent font-light">
+                  discover?
+                </span>
+              </h1>
+              
+              <p className="text-sm text-gray-600 dark:text-gray-300 font-light max-w-xl mx-auto leading-relaxed">
+                Generate comprehensive intelligence reports with AI-powered research
+              </p>
+            </div>
+            
+            {/* Chat Input */}
+            <div className="mb-6">
+              <ChatInput
+                input={input}
+                setInput={setInput}
+                isLoading={isLoading}
+                agents={agents}
+                onSendMessage={handleSendMessage}
+                searchMode={searchMode}
+                onSearchModeChange={setSearchMode}
               />
-              <Label htmlFor="research-mode" className="text-sm font-medium">
-                Deep Research
-              </Label>
-              <Search className="h-4 w-4 text-primary" />
             </div>
-          </div>
 
-          {/* File Upload Area */}
-          {uploadedFiles.length > 0 && (
-            <div className="mb-3 p-3 bg-secondary/30 rounded-xl">
-              <div className="flex flex-wrap gap-2">
-                {uploadedFiles.map((file, index) => (
-                  <div key={index} className="flex items-center gap-2 bg-background/50 px-3 py-1 rounded-lg text-sm">
-                    <FileText className="h-3 w-3" />
-                    <span className="truncate max-w-[150px]">{file.name}</span>
-                    <button
-                      onClick={() => removeFile(index)}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
+            {/* Popular Topics Grid - Removed Coming Soon */}
+            <div className="max-w-4xl mx-auto">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">
+                Popular Topics
+              </p>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 justify-items-center">
+                {promptSuggestions.map((prompt, index) => (
+                  <Button
+                    key={prompt.text}
+                    variant="ghost"
+                    onClick={() => handlePromptClick(prompt.text)}
+                    className="group h-auto p-3 rounded-xl border border-gray-200/40 dark:border-gray-700/40 bg-white/50 dark:bg-gray-800/30 backdrop-blur-sm hover:bg-white/70 dark:hover:bg-gray-800/50 hover:shadow-md hover:scale-[1.01] transition-all duration-200 text-left justify-start w-full max-w-[180px]"
+                  >
+                    <div className="flex flex-col items-center gap-2 w-full">
+                      <div className="p-2 rounded-lg bg-gradient-to-br from-primary/8 to-blue-500/8 group-hover:from-primary/12 group-hover:to-blue-500/12 transition-all duration-200">
+                        <prompt.icon className="h-3.5 w-3.5 text-primary/80 group-hover:scale-105 transition-transform duration-200" />
+                      </div>
+                      <span className="text-xs font-medium text-gray-700 dark:text-gray-200 group-hover:text-primary/90 transition-colors leading-tight text-center">
+                        {prompt.text}
+                      </span>
+                    </div>
+                  </Button>
                 ))}
               </div>
             </div>
-          )}
-
-          {/* Chat Input */}
-          <div
-            className={`flex gap-3 ${isDragOver ? 'bg-primary/10 border-2 border-dashed border-primary rounded-xl p-2' : ''}`}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf"
-              multiple
-              onChange={(e) => handleFileUpload(e.target.files)}
-              className="hidden"
-            />
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="flex justify-between items-center p-4 border-b border-gray-200/30 dark:border-gray-700/30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-primary/90 to-blue-500/90 shadow-md">
+                <Bot className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <h2 className="text-base font-semibold text-gray-900 dark:text-white">Intelligence Assistant</h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400">AI-powered research</p>
+              </div>
+            </div>
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              onClick={() => fileInputRef.current?.click()}
-              className="self-end px-3 py-3 rounded-xl flex-shrink-0"
+              onClick={clearChat}
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-100/40 dark:hover:bg-gray-800/40"
             >
-              <Upload className="h-4 w-4" />
-            </Button>
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder={isDragOver ? "Drop PDF files here..." : "Ask me to generate an intelligence report..."}
-              className="min-h-[50px] max-h-[150px] resize-none apple-input"
-              disabled={isLoading}
-            />
-            <Button
-              onClick={sendMessage}
-              disabled={isLoading || !input.trim()}
-              className="self-end bg-primary hover:bg-primary/90 px-4 py-3 rounded-xl flex-shrink-0"
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
+              New Chat
             </Button>
           </div>
-          
-          {agents.length > 0 && (
-            <div className="text-xs text-muted-foreground mt-2 text-center">
-              Active agents: {agents.join(', ')} • {isDeepResearch ? 'Deep Research' : 'Quick Response'} Mode • Backend: localhost:8000
+
+          <div className="flex-1 flex flex-col min-h-0">
+            <ScrollArea className="flex-1 px-6">
+              <div className="max-w-4xl mx-auto py-6">
+                <MessageList 
+                  messages={messages} 
+                  isLoading={isLoading} 
+                  isDeepResearch={false}
+                  streamingMessageId={streamingMessageId}
+                />
+              </div>
+            </ScrollArea>
+
+            <div className="border-t border-gray-200/30 dark:border-gray-700/30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl">
+              <div className="max-w-4xl mx-auto px-6 py-4">
+                <ChatInput
+                  input={input}
+                  setInput={setInput}
+                  isLoading={isLoading}
+                  agents={agents}
+                  onSendMessage={handleSendMessage}
+                  searchMode={searchMode}
+                  onSearchModeChange={setSearchMode}
+                />
+              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        </>
+      )}
     </div>
   );
 };
+
+export default ChatInterface;

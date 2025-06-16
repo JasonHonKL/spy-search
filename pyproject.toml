@@ -1,0 +1,22 @@
+[project]
+name = "spy-search"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4>=4.13.4",
+    "chromadb>=0.6.3",
+    "crawl4ai>=0.6.3",
+    "duckduckgo-search>=8.0.3",
+    "fastapi[standard]>=0.115.12",
+    "google-genai>=1.19.0",
+    "httpx>=0.28.1",
+    "langchain-community>=0.3.24",
+    "lxml>=5.4.0",
+    "markitdown>=0.1.2",
+    "ollama>=0.5.1",
+    "openai>=1.85.0",
+    "selectolax>=0.3.29",
+    "uvloop>=0.21.0",
+]

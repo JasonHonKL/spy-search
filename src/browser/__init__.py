@@ -1,0 +1,1 @@
+from .duckduckgo import DuckSearch

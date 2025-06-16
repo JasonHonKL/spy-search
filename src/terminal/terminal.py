@@ -1,5 +1,9 @@
 import subprocess
 
+"""
+    Provide an executor
+"""
+
 
 class Terminal:
     def __init__(self):

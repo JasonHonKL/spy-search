@@ -1,9 +1,11 @@
 {
-    "provider": "deepseek",
-    "model": "deepseek-chat",
+    "provider": "openai",
+    "model": "deepseek/deepseek-r1-distill-llama-70b",
     "agents": [
         "reporter",
-        "local-retrieval"
+        "searcher"
     ],
-    "db": "./local_files/test"
+    "db": "./local_files/test",
+    "base_url": "https://openrouter.ai/api/v1",
+    "language": "en"
 }
