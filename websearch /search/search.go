@@ -56,6 +56,7 @@ type SearchResult struct {
 }
 
 // save result from the db
+// result should conver it to Result --> url + search + summary
 func SaveResult() {}
 
 // get result from the db

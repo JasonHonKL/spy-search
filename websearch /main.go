@@ -18,6 +18,7 @@ import (
 
 var SERPER_API string
 var DB *sql.DB
+var OPEN_ROUTER_API string
 
 /*
 Refactor all these
@@ -163,6 +164,7 @@ func main() {
 		panic("reading API key fail")
 	}
 	SERPER_API = os.Getenv("SERPER_API")
+	OPEN_ROUTER_API = os.Getenv("OPNE_ROUTER_API")
 
 	router := gin.Default()
 	router.GET("/health", Health)
