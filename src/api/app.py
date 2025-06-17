@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from .routes import files, messages, agents, streaming, misc
+from .routes import files, messages, agents, streaming, misc, auth
 
 router = APIRouter()
 
@@ -9,3 +9,4 @@ router.include_router(messages.router, tags=["messages"])
 router.include_router(agents.router, tags=["agents"])
 router.include_router(streaming.router, tags=["streaming"])
 router.include_router(misc.router, tags=["misc"])
+router.include_router(auth.router , tags=["auth"])

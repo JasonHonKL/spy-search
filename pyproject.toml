@@ -12,11 +12,13 @@ dependencies = [
     "fastapi[standard]>=0.115.12",
     "google-genai>=1.19.0",
     "httpx>=0.28.1",
+    "jwt>=1.3.1",
     "langchain-community>=0.3.24",
     "lxml>=5.4.0",
     "markitdown>=0.1.2",
     "ollama>=0.5.1",
     "openai>=1.85.0",
+    "pyjwt>=2.10.1",
     "selectolax>=0.3.29",
     "uvloop>=0.21.0",
 ]

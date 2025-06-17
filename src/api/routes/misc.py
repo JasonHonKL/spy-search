@@ -9,6 +9,9 @@ from ...factory import Factory
 from ...generate_report import generate_report
 from ...model import Model
 from ...agent import Planner , Agent
+from ...browser.duckduckgo import DuckSearch
+
+from ...prompt.quick_search import quick_search_prompt
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -73,7 +76,6 @@ async def report(
 @router.get("/news/{category}")
 def get_news(category: str):
     """Get news - SAME ENDPOINT"""
-    from ...browser.duckduckgo import DuckSearch
     res = DuckSearch().today_new(category)
     return {"news": res}
 
@@ -97,9 +99,6 @@ async def quick_response_logic(
     
     if files != None:
         pass  # TODO use mark it down to convert to text and append into the data arr
-    
-    from ...browser.duckduckgo import DuckSearch
-    from ...prompt.quick_search import quick_search_prompt
     
     search_result = await DuckSearch().search_result(query)
     prompt = quick_search_prompt(query, search_result)
