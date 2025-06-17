@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException , Depends
 from pydantic import BaseModel
 from ..auth.auth import GoogleOAuth, JWTHandler, TokenData , get_current_user , verify_google_token
 
-router = APIRouter(prefix="/auth", tags=["authentication"])
+router = APIRouter(prefix="/", tags=["authentication"])
 
 class GoogleTokenRequest(BaseModel):
     token: str
