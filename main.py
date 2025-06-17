@@ -49,6 +49,15 @@ logging.basicConfig(
 
 # DON'T create a new router here - use the imported one
 # router = APIRouter()  # ← Remove this line!
+from src.api.database import create_tables
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Create database tables
+    create_tables()
+    yield
+
 
 # Create FastAPI app
 app = FastAPI(

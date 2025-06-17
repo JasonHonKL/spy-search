@@ -25,5 +25,4 @@ Please generate your answer now.
 def quick_search_prompt(query, data, timestamp=None):
     if timestamp is None:
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(template.substitute(timestamp=timestamp, query=query, results=data))
     return template.substitute(timestamp=timestamp, query=query, results=data)

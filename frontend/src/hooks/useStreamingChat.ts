@@ -1,6 +1,7 @@
 
 import { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { apiClient } from '@/services/apiClient';
 
 interface Message {
   id: string;
@@ -35,6 +36,29 @@ export const useStreamingChat = ({
     files: File[] = [],
     isDeepResearch: boolean = false
   ) => {
+    // Check token status before making request
+    try {
+      const tokenStatus = await apiClient.getTokenStatus();
+      const tokensNeeded = isDeepResearch ? 5 : 1;
+      
+      if (tokenStatus.daily_tokens_remaining < tokensNeeded) {
+        toast({
+          title: "Insufficient Tokens",
+          description: `You need ${tokensNeeded} tokens for this search. You have ${tokenStatus.daily_tokens_remaining} remaining.`,
+          variant: "destructive",
+        });
+        return;
+      }
+    } catch (error) {
+      console.error('Failed to check token status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to check token status. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const startTime = Date.now();
     const userMessageId = Date.now().toString();
     const assistantMessageId = (Date.now() + 1).toString();
@@ -98,7 +122,7 @@ export const useStreamingChat = ({
         }
 
         const data = await response.json();
-        const responseTime = (Date.now() - startTime) / 1000;
+        const responseTime = Date.now() - startTime;
         
         setMessages(prev =>
           prev.map(msg =>
@@ -143,8 +167,8 @@ export const useStreamingChat = ({
           }
         }
 
-        // Calculate response time
-        const responseTime = (Date.now() - startTime) / 1000;
+        // Calculate response time in milliseconds
+        const responseTime = Date.now() - startTime;
         setMessages(prev =>
           prev.map(msg =>
             msg.id === assistantMessageId

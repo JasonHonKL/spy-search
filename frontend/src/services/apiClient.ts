@@ -78,6 +78,10 @@ class ApiClient {
 
     return response.json();
   }
+
+  async getTokenStatus(): Promise<any> {
+    return this.get('/tokens/status');
+  }
 }
 
 export const apiClient = new ApiClient();

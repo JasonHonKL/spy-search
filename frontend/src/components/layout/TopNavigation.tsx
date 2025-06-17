@@ -1,10 +1,9 @@
 
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Settings, Eye, Newspaper, GraduationCap, LogIn, LogOut, User } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Settings, Eye } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface TopNavigationProps {
   onNewConversation: () => void;
@@ -12,102 +11,89 @@ interface TopNavigationProps {
 }
 
 export const TopNavigation = ({ onNewConversation, onSettingsClick }: TopNavigationProps) => {
-  const { toast } = useToast();
-  const { isAuthenticated, user, loginWithGoogle, logout, isLoading } = useAuth();
+  const { user, logout, isAuthenticated, loginWithGoogle } = useAuth();
+  const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out.",
-    });
-  };
-
-  const handleLoginClick = async () => {
-    try {
-      await loginWithGoogle();
-    } catch (error) {
-      toast({
-        title: "Login failed",
-        description: "Failed to initiate Google login. Please try again.",
-        variant: "destructive",
-      });
-    }
+  const handleLogoClick = () => {
+    onNewConversation();
+    navigate('/');
   };
 
   return (
-    <div className="flex items-center justify-between p-4 border-b border-border/20 bg-background">
-      <div className="flex items-center gap-4">
-        <SidebarTrigger />
-        <Link to="/" onClick={onNewConversation} className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
-            <Eye className="h-4 w-4 text-primary" />
-          </div>
-          <h1 className="text-base font-light gradient-text">Spy Search</h1>
-        </Link>
-        <div className="flex gap-2">
-          <Link to="/news">
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-              <Newspaper className="h-4 w-4 mr-2" />
-              Discover
-            </Button>
-          </Link>
-          <Link to="/academic">
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-              <GraduationCap className="h-4 w-4 mr-2" />
-              Academic
-            </Button>
-          </Link>
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
-        {isLoading ? (
-          <div className="text-sm text-muted-foreground">Loading...</div>
-        ) : isAuthenticated ? (
-          <>
-            <div className="flex items-center gap-3">
-              {user?.picture && (
-                <img 
-                  src={user.picture} 
-                  alt={user.name || user.email} 
-                  className="w-8 h-8 rounded-full border border-border"
-                />
-              )}
-              <div className="text-right">
-                <div className="text-sm font-medium text-foreground">{user?.name}</div>
-                <div className="text-xs text-muted-foreground">{user?.email}</div>
+    <div className="w-full bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200/20 dark:border-gray-800/20">
+      <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="flex items-center justify-between">
+          {/* Left side - Logo with Eye Icon - Clickable */}
+          <button onClick={handleLogoClick} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <div className="relative">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
+                <Eye className="h-5 w-5 text-white" />
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLogout}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
-          </>
-        ) : (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleLoginClick}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <LogIn className="h-4 w-4 mr-2" />
-            Sign in with Google
-          </Button>
-        )}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onSettingsClick}
-          className="text-muted-foreground hover:text-foreground"
-        >
-          <Settings className="h-4 w-4 mr-2" />
-          Settings
-        </Button>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
+                Spy Search
+              </h1>
+              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                AI-Powered Research
+              </p>
+            </div>
+          </button>
+
+          {/* Right side - Actions */}
+          <div className="flex items-center gap-3">
+            {isAuthenticated && user ? (
+              <div className="flex items-center gap-3 pr-3 border-r border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-2">
+                  <img 
+                    src={user.picture} 
+                    alt={user.name}
+                    className="w-8 h-8 rounded-full border-2 border-gray-100 dark:border-gray-700"
+                  />
+                  <div className="hidden sm:block">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {user.name}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Researcher
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={logout}
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                >
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <div className="pr-3 border-r border-gray-200 dark:border-gray-700">
+                <Button
+                  onClick={loginWithGoogle}
+                  variant="default"
+                  size="sm"
+                  className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-all duration-200 shadow-md"
+                >
+                  Sign In
+                </Button>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <Button
+                onClick={onSettingsClick}
+                variant="ghost"
+                size="sm"
+                className="rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

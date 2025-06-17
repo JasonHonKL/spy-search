@@ -8,7 +8,6 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import News from "./pages/News";
-import Academic from "./pages/Academic";
 import NotFound from "./pages/NotFound";
 import { AuthCallback } from "@/components/auth/AuthCallback";
 
@@ -25,7 +24,6 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/news" element={<News />} />
-              <Route path="/academic" element={<Academic />} />
               <Route path="/auth/google/callback" element={<AuthCallback />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

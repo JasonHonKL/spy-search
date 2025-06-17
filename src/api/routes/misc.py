@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Form, File, UploadFile, HTTPException
+from fastapi import APIRouter, Form, File, UploadFile, HTTPException , Depends
 from typing import List, Optional
 import json
 import logging
@@ -11,6 +11,15 @@ from ...model import Model
 from ...agent import Planner , Agent
 from ...browser.duckduckgo import DuckSearch
 
+from ..database.session import get_db   
+from ..services.user_service import UserService
+from ..auth.auth import get_current_user
+
+from sqlalchemy.orm import sessionmaker, Session
+from datetime import date
+
+
+from ..models.user import User
 from ...prompt.quick_search import quick_search_prompt
 
 router = APIRouter()
@@ -49,8 +58,13 @@ async def report(
     query: str,
     messages: str = Form(...),
     files: Optional[List[UploadFile]] = File(None),
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    """Generate report - SAME ENDPOINT"""
+    # Check if user has enough tokens (5 tokens for report generation)
+    if not UserService.check_and_deduct_tokens(db, current_user["email"], 5):
+        raise HTTPException(status_code=403, detail="Insufficient tokens. Need 5 tokens for report generation.")
+    
     logging.info("start generating report")
     try:
         messages_list = json.loads(messages)
@@ -127,3 +141,26 @@ async def main(query, api: str = None):
     
     logging.info("finish generating report")
     return r
+
+
+# In auth.py - add this endpoint
+@router.get("/tokens/status")
+async def get_token_status(
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get current user's token status"""
+    user = db.query(User).filter(User.email == current_user["email"]).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Reset daily tokens if it's a new day
+    if user.last_token_reset < date.today():
+        user.daily_tokens = 20
+        user.last_token_reset = date.today()
+        db.commit()
+    
+    return {
+        "daily_tokens_remaining": user.daily_tokens,
+        "last_reset": user.last_token_reset
+    }

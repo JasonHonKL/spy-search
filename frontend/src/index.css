@@ -3,89 +3,89 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Apple-inspired design system */
+/* Elegant design system */
 
 @layer base {
   :root {
-    /* Light theme (default) */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    /* Light theme - More elegant and softer */
+    --background: 0 0% 99%;
+    --foreground: 0 0% 9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 0 0% 9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
+    --popover-foreground: 0 0% 9%;
 
-    --primary: 212 100% 45%;
+    --primary: 214 100% 50%;
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
+    --secondary: 0 0% 97%;
+    --secondary-foreground: 0 0% 15%;
 
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 50%;
 
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+    --accent: 214 100% 97%;
+    --accent-foreground: 214 100% 15%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 212 100% 45%;
+    --border: 0 0% 92%;
+    --input: 0 0% 94%;
+    --ring: 214 100% 50%;
 
-    --radius: 0.75rem;
+    --radius: 0.875rem;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 0 0% 9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary: 214 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 96.1%;
+    --sidebar-accent: 0 0% 96%;
     --sidebar-accent-foreground: 0 0% 9%;
-    --sidebar-border: 0 0% 89.8%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-border: 0 0% 92%;
+    --sidebar-ring: 214 100% 50%;
   }
 
   .dark {
-    /* Dark theme */
-    --background: 0 0% 6%;
-    --foreground: 0 0% 98%;
+    /* Dark theme - More sophisticated and elegant */
+    --background: 240 10% 4%;
+    --foreground: 0 0% 95%;
 
-    --card: 0 0% 9%;
-    --card-foreground: 0 0% 98%;
+    --card: 240 8% 6%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 0 0% 9%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 240 8% 6%;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 212 100% 45%;
+    --primary: 214 100% 50%;
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 0 0% 14%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 240 6% 10%;
+    --secondary-foreground: 0 0% 85%;
 
-    --muted: 0 0% 14%;
-    --muted-foreground: 0 0% 64%;
+    --muted: 240 5% 12%;
+    --muted-foreground: 0 0% 60%;
 
-    --accent: 0 0% 14%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 214 32% 12%;
+    --accent-foreground: 214 100% 85%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 14%;
-    --ring: 212 100% 45%;
+    --border: 240 6% 14%;
+    --input: 240 6% 10%;
+    --ring: 214 100% 50%;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-background: 240 8% 6%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 214 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 240 6% 10%;
+    --sidebar-accent-foreground: 0 0% 85%;
+    --sidebar-border: 240 6% 14%;
+    --sidebar-ring: 214 100% 50%;
   }
 }
 
@@ -96,41 +96,64 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    letter-spacing: -0.01em;
   }
 
   .gradient-text {
-    @apply bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary via-blue-500 to-primary bg-clip-text text-transparent;
   }
 
   .glass-card {
-    @apply backdrop-blur-xl bg-card/60 border border-border/40;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    @apply backdrop-blur-xl bg-card/80 border border-border/60;
+    box-shadow: 
+      0 4px 6px -1px rgba(0, 0, 0, 0.05),
+      0 2px 4px -1px rgba(0, 0, 0, 0.03),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 
-  .apple-button {
-    @apply bg-primary/10 hover:bg-primary/20 border border-primary/20 backdrop-blur-sm transition-all duration-200;
+  .elegant-button {
+    @apply bg-gradient-to-r from-primary/10 to-blue-500/10 hover:from-primary/20 hover:to-blue-500/20 
+           border border-primary/20 backdrop-blur-sm transition-all duration-300 
+           shadow-sm hover:shadow-md;
   }
 
-  .apple-input {
-    @apply bg-secondary/50 border border-border/50 backdrop-blur-sm focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all duration-200;
+  .elegant-input {
+    @apply bg-background/80 border border-border/60 backdrop-blur-sm 
+           focus:border-primary/60 focus:ring-2 focus:ring-primary/20 
+           transition-all duration-300 placeholder:text-muted-foreground/60;
   }
 }
 
 @layer utilities {
   .animate-fade-in {
-    animation: fadeIn 0.3s ease-out forwards;
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out forwards;
   }
   
   @keyframes fadeIn {
     from {
       opacity: 0;
-      transform: translateY(-8px);
+      transform: translateY(10px);
     }
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+  
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
     }
   }
 }

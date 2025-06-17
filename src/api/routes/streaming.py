@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Form, File, UploadFile, HTTPException
+from fastapi import APIRouter, Form, File, UploadFile, HTTPException , Depends
 from fastapi.responses import StreamingResponse
 from typing import List, Optional
 import json
@@ -8,6 +8,12 @@ from ..models.schemas import Message
 from ..core.model_cache import get_user_model
 from ..core.config import read_config
 from ...prompt.quick_search import quick_search_prompt
+
+from ..database.session import get_db   
+from ..services.user_service import UserService
+from ..auth.auth import get_current_user
+
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -79,14 +85,20 @@ async def stream_data(
     finally:
         logger.info(f"[{session_id}] finish the stream")
 
+
 @router.post("/stream_completion/{query}")
 async def stream_response(
     query: str,
     messages: str = Form(...),
     files: Optional[List[UploadFile]] = File(None),
     api: Optional[str] = Form(None),
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    """Stream completion - SAME ENDPOINT"""
+    # Check if user has enough tokens (1 token for quick search)
+    if not UserService.check_and_deduct_tokens(db, current_user["email"], 1):
+        raise HTTPException(status_code=403, detail="Insufficient tokens. Daily limit reached.")
+    
     return StreamingResponse(
         stream_data(query, messages, files, api), media_type="text/plain"
     )
@@ -125,8 +137,14 @@ async def stream_response_academic(
     messages: str = Form(...),
     files: Optional[List[UploadFile]] = File(None),
     api: Optional[str] = Form(None),
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    """Stream academic completion - SAME ENDPOINT"""
+    # Check if user has enough tokens (1 token for quick search)
+    if not UserService.check_and_deduct_tokens(db, current_user["email"], 1):
+        raise HTTPException(status_code=403, detail="Insufficient tokens. Daily limit reached.")
+    
     return StreamingResponse(
         stream_academic_data(query, messages, files, api), media_type="text/plain"
     )
+

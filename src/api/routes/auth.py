@@ -2,6 +2,11 @@ from fastapi import APIRouter, HTTPException , Depends
 from pydantic import BaseModel
 from ..auth.auth import GoogleOAuth, JWTHandler, TokenData , get_current_user , verify_google_token
 
+from ..database.session import get_db
+from ..services.user_service import UserService
+from sqlalchemy.orm import Session
+
+
 router = APIRouter()
 
 class GoogleTokenRequest(BaseModel):
@@ -13,10 +18,12 @@ class LoginResponse(BaseModel):
     user: TokenData
 
 @router.get("/auth/google/callback")
-async def google_login_callback(code: str):
-    # Use the authorization code to get access token from Google
+async def google_login_callback(code: str, db: Session = Depends(get_db)):
     tokens = GoogleOAuth.exchange_code_for_token(code)
     user_info = GoogleOAuth.get_user_info(tokens["access_token"])
+    
+    # Save or update user in database
+    user = UserService.get_or_create_user(db, user_info)
     
     jwt_token = JWTHandler.create_access_token(data=user_info)
     
@@ -27,14 +34,15 @@ async def google_login_callback(code: str):
     )
 
 @router.post("/google/exchange-code")
-async def google_exchange_code(request: dict):
-    """Exchange authorization code for tokens"""
+async def google_exchange_code(request: dict, db: Session = Depends(get_db)):
     code = request.get("code")
     
-    # Exchange code for token
     tokens = GoogleOAuth.exchange_code_for_token(code)
     user_info = GoogleOAuth.get_user_info(tokens["access_token"])
-    # Create JWT token
+    
+    # Save or update user in database
+    user = UserService.get_or_create_user(db, user_info)
+    
     jwt_token = JWTHandler.create_access_token(data=user_info)
     
     return LoginResponse(
