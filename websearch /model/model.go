@@ -2,7 +2,7 @@ package model
 
 import (
 	"context"
-	"fmt"
+	"log/slog"
 
 	openrouter "github.com/revrost/go-openrouter"
 )
@@ -19,7 +19,8 @@ type Model struct {
 /*
 C should be the content of the website
 */
-func (m *Model) Completion(c string) {
+func (m *Model) Completion(c string) string {
+	slog.Info("start handling text")
 	resp, err := m.Client.CreateChatCompletion(
 		context.Background(),
 		openrouter.ChatCompletionRequest{
@@ -39,8 +40,8 @@ func (m *Model) Completion(c string) {
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Println(resp)
+	slog.Info("finish handling")
+	return resp.Choices[0].Message.Content.Text
 }
 
 func NewModel(name, apikey string) (Model, error) {

@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/JasonHKL/spy-search/model"
 	Search "github.com/JasonHKL/spy-search/search"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -19,6 +20,7 @@ import (
 var SERPER_API string
 var DB *sql.DB
 var OPEN_ROUTER_API string
+var M model.Model
 
 /*
 Refactor all these
@@ -101,6 +103,7 @@ func SearchContent(c *gin.Context) {
 	/*
 		Handle the search here
 	*/
+	fmt.Println(M)
 	var json Message
 	//search query handler
 
@@ -165,6 +168,11 @@ func main() {
 	}
 	SERPER_API = os.Getenv("SERPER_API")
 	OPEN_ROUTER_API = os.Getenv("OPNE_ROUTER_API")
+
+	M, err = model.NewModel("shisa-ai/shisa-v2-llama3.3-70b:free", OPEN_ROUTER_API)
+	if err != nil {
+		panic(err)
+	}
 
 	router := gin.Default()
 	router.GET("/health", Health)
