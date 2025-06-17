@@ -29,7 +29,7 @@ export const AgentConfig = ({ agents, onAgentConfigSave }: AgentConfigProps) => 
 
   const availableAgents = [
     { id: "searcher", label: "Searcher", required: false, disabled: false },
-    { id: "local-retrieval", label: "Local Retrieval Searcher", required: false, disabled: true },
+    { id: "local-retrieval", label: "Local Retrieval Searcher", required: false, disabled: false },
     { id: "executor", label: "Executor", required: false, disabled: true },
     { id: "reporter", label: "Reporter", required: false, disabled: false, group: "output" },
     { id: "summary", label: "Summary", required: false, disabled: true, group: "output" },

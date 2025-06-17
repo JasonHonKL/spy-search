@@ -1,9 +1,10 @@
+
 import { useState, useRef } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { ChatInterface } from "@/components/ChatInterface";
 import { ConversationSidebar, ConversationSidebarRef } from "@/components/ConversationSidebar";
 import { TopNavigation } from "@/components/layout/TopNavigation";
-import { SettingsPage } from "@/components/layout/SettingsPage";
+import { SimplifiedSettingsPage } from "@/components/layout/SimplifiedSettingsPage";
 import { useToast } from "@/hooks/use-toast";
 
 interface Message {
@@ -14,7 +15,6 @@ interface Message {
 }
 
 const Index = () => {
-  const [agents, setAgents] = useState<string[]>(["planner", "reporter"]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -24,53 +24,14 @@ const Index = () => {
   // Reference to the sidebar's refresh function
   const conversationSidebarRef = useRef<ConversationSidebarRef>(null);
 
-  const handleAgentConfigSave = async (config: {
-    agents: string[];
-    provider: string;
-    model: string;
-  }) => {
-    setAgents(config.agents);
-    
-    const agentsToSend = config.agents.filter(agent => agent !== "planner");
-    
-    try {
-      const response = await fetch('http://localhost:8000/agents_selection', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          agents: agentsToSend,
-          provider: config.provider,
-          model: config.model
-        }),
-      });
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        toast({
-          title: "Configuration Saved",
-          description: `Agent selection, provider (${config.provider}), and model (${config.model}) have been saved successfully.`,
-        });
-        setShowSettings(false);
-      } else {
-        throw new Error("Failed to save configuration");
-      }
-    } catch (error) {
-      toast({
-        title: "Configuration Failed",
-        description: "Failed to save agent configuration. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleConversationSelect = async (title: string) => {
     try {
       const response = await fetch('http://localhost:8000/load_message', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
         body: JSON.stringify({ title }),
       });
       
@@ -113,10 +74,8 @@ const Index = () => {
 
   if (showSettings) {
     return (
-      <SettingsPage
-        agents={agents}
+      <SimplifiedSettingsPage
         onBack={() => setShowSettings(false)}
-        onAgentConfigSave={handleAgentConfigSave}
       />
     );
   }
@@ -140,7 +99,6 @@ const Index = () => {
 
             <div className="flex-1 min-h-0">
               <ChatInterface 
-                agents={agents} 
                 messages={messages}
                 setMessages={setMessages}
                 isLoading={isLoading}

@@ -1,11 +1,12 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Bot, Sparkles, TrendingUp, Globe, Cpu, Heart, Bitcoin, Microscope, User } from "lucide-react";
+import { Bot, Sparkles, TrendingUp, Globe, Cpu, Heart, Bitcoin, Microscope } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageList } from "./chat/MessageList";
 import { ChatInput } from "./chat/ChatInput";
 import { useStreamingChat } from "@/hooks/useStreamingChat";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Message {
   id: string;
@@ -16,7 +17,6 @@ interface Message {
 }
 
 interface ChatInterfaceProps {
-  agents: string[];
   messages: Message[];
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   isLoading: boolean;
@@ -27,7 +27,6 @@ interface ChatInterfaceProps {
 }
 
 export const ChatInterface = ({ 
-  agents, 
   messages, 
   setMessages, 
   isLoading, 
@@ -38,6 +37,7 @@ export const ChatInterface = ({
 }: ChatInterfaceProps) => {
   const [input, setInput] = useState("");
   const [searchMode, setSearchMode] = useState(true);
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   const { sendStreamingMessage, streamingMessageId } = useStreamingChat({
     messages,
@@ -73,6 +73,18 @@ export const ChatInterface = ({
     { text: "Recent scientific discoveries", icon: Microscope }
   ];
 
+  // Show loading state while authentication is being checked
+  if (authLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-sm text-muted-foreground">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full max-w-none mx-auto bg-gradient-to-br from-gray-50/20 to-white/40 dark:from-gray-900/20 dark:to-gray-800/20">
       {messages.length === 0 ? (
@@ -93,6 +105,11 @@ export const ChatInterface = ({
               
               <p className="text-sm text-gray-600 dark:text-gray-300 font-light max-w-xl mx-auto leading-relaxed">
                 Generate comprehensive intelligence reports with AI-powered research
+                {!isAuthenticated && (
+                  <span className="block text-orange-600 dark:text-orange-400 mt-2 font-medium">
+                    Please sign in with Google to start searching
+                  </span>
+                )}
               </p>
             </div>
             
@@ -102,14 +119,13 @@ export const ChatInterface = ({
                 input={input}
                 setInput={setInput}
                 isLoading={isLoading}
-                agents={agents}
                 onSendMessage={handleSendMessage}
                 searchMode={searchMode}
                 onSearchModeChange={setSearchMode}
               />
             </div>
 
-            {/* Popular Topics Grid - Removed Coming Soon */}
+            {/* Popular Topics Grid */}
             <div className="max-w-4xl mx-auto">
               <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">
                 Popular Topics
@@ -121,7 +137,10 @@ export const ChatInterface = ({
                     key={prompt.text}
                     variant="ghost"
                     onClick={() => handlePromptClick(prompt.text)}
-                    className="group h-auto p-3 rounded-xl border border-gray-200/40 dark:border-gray-700/40 bg-white/50 dark:bg-gray-800/30 backdrop-blur-sm hover:bg-white/70 dark:hover:bg-gray-800/50 hover:shadow-md hover:scale-[1.01] transition-all duration-200 text-left justify-start w-full max-w-[180px]"
+                    disabled={!isAuthenticated}
+                    className={`group h-auto p-3 rounded-xl border border-gray-200/40 dark:border-gray-700/40 bg-white/50 dark:bg-gray-800/30 backdrop-blur-sm hover:bg-white/70 dark:hover:bg-gray-800/50 hover:shadow-md hover:scale-[1.01] transition-all duration-200 text-left justify-start w-full max-w-[180px] ${
+                      !isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                   >
                     <div className="flex flex-col items-center gap-2 w-full">
                       <div className="p-2 rounded-lg bg-gradient-to-br from-primary/8 to-blue-500/8 group-hover:from-primary/12 group-hover:to-blue-500/12 transition-all duration-200">
@@ -177,7 +196,6 @@ export const ChatInterface = ({
                   input={input}
                   setInput={setInput}
                   isLoading={isLoading}
-                  agents={agents}
                   onSendMessage={handleSendMessage}
                   searchMode={searchMode}
                   onSearchModeChange={setSearchMode}
