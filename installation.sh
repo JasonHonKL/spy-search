@@ -1,4 +1,7 @@
-#!/bin/sh
+#!/bin/bash
+set -e  # Exit on any error
+
+echo "Starting installation process..."
 
 # Check if uv is installed
 command_exists() {
@@ -12,27 +15,12 @@ else
   pip install uv || { echo "Failed to install uv"; exit 1; }
 fi
 
-# Remove any existing virtual environment to avoid conflicts
-if [ -d ".venv" ]; then
-  echo "Removing existing virtual environment..."
-  rm -rf .venv
-fi
-
-# Create a fresh virtual environment
-echo "Creating virtual environment..."
-uv venv || { echo "Failed to create virtual environment"; exit 1; }
-
-# Activate the virtual environment
-echo "Activating virtual environment..."
-. .venv/bin/activate || { echo "Failed to activate virtual environment"; exit 1; }
-echo "Virtual environment activated"
-
-# Install uvicorn and other requirements
+# Install uvicorn and other requirements directly (no virtual environment)
 echo "Installing uvicorn..."
-uv pip install uvicorn || { echo "Failed to install uvicorn"; exit 1; }
+uv pip install --system uvicorn || { echo "Failed to install uvicorn"; exit 1; }
 
-echo "Installing requirements..."
-uv pip install -r requirements.txt || { echo "Failed to install requirements"; exit 1; }
+echo "Installing Python requirements..."
+uv pip install --system -r requirements.txt || { echo "Failed to install requirements"; exit 1; }
 
 # Install playwright browsers
 echo "Installing playwright browsers..."

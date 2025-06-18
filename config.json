@@ -2,7 +2,8 @@
     "provider": "openai",
     "model": "meta-llama/llama-3.3-70b-instruct",
     "agents": [
-        "reporter"
+        "reporter",
+        "searcher"
     ],
     "db": "./local_files/test",
     "base_url": "https://openrouter.ai/api/v1",

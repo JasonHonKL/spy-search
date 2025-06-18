@@ -25,32 +25,35 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     npm \
     dos2unix \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv globally first
-RUN pip install uv
+# Install uv globally
+RUN pip install --no-cache-dir uv
 
 # Copy requirements first for better caching
 COPY requirements.txt ./
 COPY frontend/package*.json ./frontend/
 
-# Copy scripts
-COPY installation.sh run.sh ./
+# Copy the rest of the application
+COPY . .
 
-# Convert line endings for shell scripts
+# Convert line endings for shell scripts and make executable
 RUN dos2unix installation.sh run.sh && \
     sed -i 's/\r$//' installation.sh && \
     sed -i 's/\r$//' run.sh && \
     chmod +x installation.sh run.sh
 
-# Copy the rest of the application
-COPY . .
-
 # Run installation.sh to install python packages, playwright, npm deps, etc.
-RUN /bin/sh installation.sh
+RUN bash installation.sh
 
-# Expose backend and frontend ports
-EXPOSE 8000 8080
+# Add health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8080 || exit 1
+
+# Expose both ports for local testing
+EXPOSE 8080
+EXPOSE 8000
 
 # Use run.sh as the container entrypoint
-ENTRYPOINT ["/bin/sh", "run.sh"]
+ENTRYPOINT ["bash", "run.sh"]

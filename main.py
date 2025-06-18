@@ -52,12 +52,6 @@ logging.basicConfig(
 from src.api.database import create_tables
 from contextlib import asynccontextmanager
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Startup: Create database tables
-    create_tables()
-    yield
-
 
 # Create FastAPI app
 app = FastAPI(
@@ -65,6 +59,17 @@ app = FastAPI(
     description="API Documentation", 
     version="1.0.0"
 )
+
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Create database tables
+    create_tables()
+    yield
 
 # Include the imported router (which has all your routes)
 app.include_router(router)
