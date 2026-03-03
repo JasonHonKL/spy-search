@@ -35,11 +35,15 @@ class Planner(Agent):
     def set_name(self, name):
         self.name = name
 
-    async def run(self, response, data=[]):
+    async def run(self, response, data=None):
         """
         It should generate a to do list
         and then pass to different agent
         """
+        # Initialize data as empty list if None (avoid mutable default argument)
+        if data is None:
+            data = []
+
         # Initialization
         # only run for oen time
 
@@ -66,7 +70,7 @@ class Planner(Agent):
         else:
             self._response_handler(response)
             new_task = self._todo_list.pop_task()
-            if new_task == None:
+            if new_task is None:
                 logger.info("Terminate processs")
                 obj = {"agent": "TERMINATE", "task": "TERMINATE", "data": data}
             else:
