@@ -118,13 +118,13 @@ class Crawl:
 
     async def get_summary(self, url: list, query):
         summary = []
-        for u in url:
+        # Create a copy of the list to avoid modifying while iterating
+        for u in url[:]:
             is_pdf = await self._is_pdf(u)
             if is_pdf:
                 try:
                     content = await self.get_pdf_summary(u)
-                    response = await summary.append(content)
-                    summary.append(response)
+                    summary.append(content)
                 except Exception as e:
                     print("Handling pdf error: ", e)
                 # current not support pdf first

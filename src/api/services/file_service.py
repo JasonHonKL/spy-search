@@ -82,12 +82,22 @@ class FileService:
     
     def get_file_path(self, filepath: str) -> str:
         """Get full file path and validate"""
+        # Prevent path traversal attacks
+        if ".." in filepath or filepath.startswith("/"):
+            raise HTTPException(status_code=400, detail="Invalid file path")
+
         full_path = os.path.join(self.base_path, filepath)
-        
-        if not os.path.exists(full_path):
+        real_path = os.path.realpath(full_path)
+        real_base_path = os.path.realpath(self.base_path)
+
+        # Ensure the resolved path is within the base directory
+        if not real_path.startswith(real_base_path):
+            raise HTTPException(status_code=400, detail="Access denied")
+
+        if not os.path.exists(real_path):
             raise HTTPException(status_code=404, detail="File not found")
-        
-        if not os.path.isfile(full_path):
+
+        if not os.path.isfile(real_path):
             raise HTTPException(status_code=400, detail="Path is not a file")
-        
-        return full_path
+
+        return real_path
