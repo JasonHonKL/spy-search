@@ -3,3 +3,4 @@
 | Issue | PR | Status | Last Updated |
 |-------|----|--------|-------------|
 | #139 | #140 | 🔄 Awaiting Review | 2026-05-23 |
+| #136 | #141 | 🔄 Awaiting Review | 2026-05-23 |
