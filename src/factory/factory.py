@@ -2,13 +2,13 @@
 Factory
 """
 
-from ..agent import Planner, Search_agent, Reporter, RAG_agent, Quick_searcher
+from ..agent import Planner, Search_agent, Reporter, RAG_agent, Quick_searcher, BrowserAgent
 
 from ..model import Gemini, Ollama, Deepseek, Model, Gork, OpenAI
 
 
 class Factory:
-    def get_agent(agent_name: str, model: Model):
+    def get_agent(agent_name: str, model: Model, max_steps: int = 10, headless: bool = True):
         if agent_name == "planner":
             return Planner(model)
         elif agent_name == "reporter":
@@ -17,6 +17,8 @@ class Factory:
             return Quick_searcher(model)
         elif agent_name == "local-retrieval":
             return RAG_agent(model)
+        elif agent_name == "browser-agent":
+            return BrowserAgent(model, max_steps=max_steps, headless=headless)
 
     def get_model(provider: str, model: str) -> Model:
         if provider == "deepseek":

@@ -4,3 +4,4 @@ from .reporter import Reporter
 from .agent import Agent
 from .retrival import RAG_agent
 from .quick_searcher import Quick_searcher
+from .browser_agent import BrowserAgent
